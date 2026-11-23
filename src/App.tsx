@@ -429,7 +429,9 @@ export default function App() {
             </div>
 
             <h3 style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', margin: '8px 0 0 0' }}>
-              {formMode === 'signin' ? 'Sign in with Email' : 'Create an Account'}
+              {formMode === 'signin' 
+                ? (language==='ar'?'تسجيل الدخول بالبريد':'Sign in with Email') 
+                : (language==='ar'?'إنشاء حساب جديد':'Create an Account')}
             </h3>
 
             {formError && (
@@ -442,7 +444,7 @@ export default function App() {
                 fontSize: 12,
                 fontWeight: 800,
                 color: 'var(--ink)',
-                textAlign: 'left'
+                textAlign: language === 'ar' ? 'right' : 'left'
               }}>
                 ⚠️ {formError}
               </div>
@@ -451,10 +453,12 @@ export default function App() {
             <form onSubmit={handleEmailAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {formMode === 'signup' && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, width: '100%' }}>
-                  <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Full Name</label>
+                  <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+                    {language==='ar'?'الاسم بالكامل':'Full Name'}
+                  </label>
                   <input
                     type="text"
-                    placeholder="Enter your name"
+                    placeholder={language==='ar'?'اكتبي اسمك هنا':'Enter your name'}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -474,7 +478,9 @@ export default function App() {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, width: '100%' }}>
-                <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Email Address</label>
+                <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+                  {language==='ar'?'البريد الإلكتروني':'Email Address'}
+                </label>
                 <input
                   type="email"
                   placeholder="name@example.com"
@@ -496,7 +502,9 @@ export default function App() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, width: '100%' }}>
-                <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>Password</label>
+                <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+                  {language==='ar'?'كلمة المرور':'Password'}
+                </label>
                 <input
                   type="password"
                   placeholder="••••••••"
@@ -536,7 +544,11 @@ export default function App() {
                   fontFamily: 'Nunito'
                 }}
               >
-                {isSubmitting ? 'Processing...' : formMode === 'signin' ? 'Sign In' : 'Sign Up'}
+                {isSubmitting 
+                  ? (language==='ar'?'جاري التحقق...':'Processing...') 
+                  : formMode === 'signin' 
+                  ? (language==='ar'?'تسجيل الدخول':'Sign In') 
+                  : (language==='ar'?'إنشاء الحساب':'Sign Up')}
               </button>
             </form>
 

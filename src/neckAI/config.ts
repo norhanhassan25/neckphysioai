@@ -68,13 +68,14 @@ export const LASER_STAGES: Record<number, Targets> = {
   2: { ...common, holdSeconds: 1, dwellSeconds: 1.2, jpeMaxDeg: 7.5, targetAmplitudeDeg: 12, targetRadiusDeg: 5.0 },
 };
 export const NEUTRAL_STAGES: Record<number, Targets> = {
-  1: { ...common, holdSeconds: 6, referenceCva: 50, cvaTolDeg: 12, maxPitchErrDeg: 8, maxPostureDriftDeg: 5, maxFwdPct: 9 },
-  2: { ...common, holdSeconds: 8, referenceCva: 50, cvaTolDeg: 12, maxPitchErrDeg: 8, maxPostureDriftDeg: 5, maxFwdPct: 9 },
+  1: { ...common, holdSeconds: 6, referenceCva: 50, cvaTolDeg: 14, maxPitchErrDeg: 10, maxPostureDriftDeg: 7, maxFwdPct: 11 },
+  2: { ...common, holdSeconds: 8, referenceCva: 50, cvaTolDeg: 14, maxPitchErrDeg: 10, maxPostureDriftDeg: 7, maxFwdPct: 11 },
+  3: { ...common, holdSeconds: 6, referenceCva: 50, cvaTolDeg: 16, maxPitchErrDeg: 12, maxPostureDriftDeg: 8, maxFwdPct: 12 },
 };
 export const TRACKING_STAGES: Record<number, Targets> = {
-  1: { ...common, holdSeconds: 0, rangeDeg: 15, minTimeOnTargetPct: 40, trialSeconds: 15, maxLagMs: 500 },
-  2: { ...common, holdSeconds: 0, rangeDeg: 15, minTimeOnTargetPct: 40, trialSeconds: 15, maxLagMs: 500 },
-  3: { ...common, holdSeconds: 0, rangeDeg: 15, minTimeOnTargetPct: 40, trialSeconds: 15, maxLagMs: 500 },
+  1: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
+  2: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
+  3: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
 };
 const make = (
   id: string,
@@ -147,18 +148,18 @@ export const TRACKER_CONFIGS: Record<string, ExerciseConfig> = {
     'front',
     1,
     TRACKING_STAGES[1],
-    0.26,
-    'Follow the moving target using gentle HEAD movement (eye gaze is not tracked).',
-    'اتبعي الهدف المتحرك بحركة رأس هادئة (نظرة العين مش بتتتبع).',
+    0.35,
+    'Follow the moving target using gentle HEAD movement (eye gaze is not tracked). Wider tolerance for natural movement variation.',
+    'اتبعي الهدف المتحرك بحركة رأس هادئة (نظرة العين مش بتتتبع). هامش أوسع لتنوع الحركة الطبيعية.',
   ),
   'tracking-2': make(
     'tracking-2',
-    'tracking',
+    'neutral',
     'front',
-    2,
-    TRACKING_STAGES[2],
-    0.19,
-    'Progression: trace a slower figure-eight target with your head.',
-    'مرحلة متقدمة: اتبعي مسار شكل ثمانية ببطء باستخدام الرأس.',
+    3,
+    NEUTRAL_STAGES[3],
+    0.30,
+    'Hold your head in a neutral position as shown in the video. Camera checks posture stability with wider tolerance.',
+    'ثبّتي رأسك في وضع محايد زي ما في الفيديو. الكاميرا بتتابع ثبات الوضعية بهامش أوسع.',
   ),
 };

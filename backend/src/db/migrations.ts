@@ -190,6 +190,26 @@ export const migrations: Migration[] = [
       DELETE FROM neck_exercises WHERE id IN ('neutral-head-1', 'neutral-head-2');
     `,
   },
+
+  {
+    id: 7,
+    name: 'update_tracking_videos_and_neutral_head',
+    sql: `
+      -- tracking-1: new video
+      UPDATE neck_exercises SET
+        video_url = 'https://youtu.be/fhpCwZ3EL-c?si=lfibfmAEJM7SlO_H'
+      WHERE id = 'tracking-1';
+
+      -- tracking-2: rename to neutral head + new video + change mode
+      UPDATE neck_exercises SET
+        title = 'Cervical Neutral Head Training — Progression 2',
+        description = 'Neutral head training progression resource for cervical rehabilitation.',
+        video_url = 'https://youtu.be/8vZMcVPOUac?si=z89jisdiZJvVrGTL',
+        tracking_mode = 'head_stability',
+        exercise_group = 'neutral_head'
+      WHERE id = 'tracking-2';
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time

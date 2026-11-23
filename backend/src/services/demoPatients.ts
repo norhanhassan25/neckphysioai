@@ -26,7 +26,7 @@ const EXERCISES = [
   { id: 'tracking-1', name: 'Cervical Tracking Training' },
   { id: 'cervical-isometric', name: 'Cervical Isometric Exercises' },
   { id: 'deep-flexor-2', name: 'Deep Cervical Flexor Progression' },
-  { id: 'tracking-2', name: 'Cervical Tracking Advanced' },
+  { id: 'tracking-2', name: 'Cervical Neutral Head Training' },
 ];
 
 function generateFrameLogs(baseScore: number, frameCount = 20) {
@@ -154,6 +154,22 @@ export async function seedDemoPatients() {
       'aseel.aziz@patient.example',
       'asmaa.salama@patient.example'
     )
+  `);
+
+  // Ensure tracking exercises have the latest requested videos and titles
+  await run(`
+    UPDATE neck_exercises SET
+      video_url = 'https://youtu.be/fhpCwZ3EL-c?si=lfibfmAEJM7SlO_H'
+    WHERE id = 'tracking-1'
+  `);
+  await run(`
+    UPDATE neck_exercises SET
+      title = 'Cervical Neutral Head Training — Progression 2',
+      description = 'Neutral head training progression resource for cervical rehabilitation.',
+      video_url = 'https://youtu.be/8vZMcVPOUac?si=z89jisdiZJvVrGTL',
+      tracking_mode = 'head_stability',
+      exercise_group = 'neutral_head'
+    WHERE id = 'tracking-2'
   `);
 
   // If already seeded once, NEVER re-insert or resurrect any users!

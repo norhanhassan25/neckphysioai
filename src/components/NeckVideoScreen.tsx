@@ -23,7 +23,7 @@ export function NeckVideoScreen() {
     'cervical-isometric': 'تمارين الرقبة الثابتة',
     'laser-proprioception': 'تأهيل الإحساس بوضع الرقبة',
     'tracking-1': 'تتبع حركة الرأس – الأول',
-    'tracking-2': 'تتبع حركة الرأس – المتقدم',
+    'tracking-2': 'تدريب وضع الرأس المحايد – المتقدم',
   };
   const id = store.getState().selectedNeckExerciseId;
   const exercise = NECK_EXERCISES.find((e) => e.id === id);
