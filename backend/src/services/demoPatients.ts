@@ -140,6 +140,15 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     experience: 'Beginner',
     goal: 'Cervical mobility & posture rehabilitation',
     sessions: createNineSessions([56, 57, 58, 59, 60, 61, 62, 63, 64], 0)
+  },
+  // 8. Sara ayman: 9 sessions, 9 days, average 68% (Sum = 612)
+  {
+    name: 'Sara ayman',
+    email: 'saraayman@gmail.com',
+    age: 26,
+    experience: 'Beginner',
+    goal: 'Cervical posture & tracking alignment',
+    sessions: createNineSessions([64, 65, 66, 67, 68, 69, 70, 71, 72], 1)
   }
 ];
 

@@ -222,12 +222,13 @@ export const migrations: Migration[] = [
         'aseelmohammed@gmail.com',
         'yasmin@example.com',
         'alzahraa@example.com',
-        'ali@example.com'
+        'ali@example.com',
+        'saraayman@gmail.com'
       );
 
       -- Remove demo placeholders so patients can Sign Up themselves with their own passwords without 'Email already registered' error
-      DELETE FROM sessions WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali');
-      DELETE FROM users WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali');
+      DELETE FROM sessions WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali', 'usr_demo_sara');
+      DELETE FROM users WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali', 'usr_demo_sara');
     `,
   },
 ];
