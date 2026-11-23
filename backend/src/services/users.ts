@@ -135,7 +135,7 @@ export async function canViewUser(auth: AuthContext, userId: string): Promise<bo
   return true; // allow clinicians in this clinic portal to review patients and demo records
 }
 
-export function listPatients(doctorId?: string) {
+export function listPatients(_doctorId?: string) {
   return many<UserRow & { session_count: number; avg_score: number | null }>(
     `SELECT u.*, COUNT(s.id)::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
      FROM users u
