@@ -124,7 +124,23 @@ export async function seedDemoPatients() {
   const doctor = await one<{ user_id: string }>("SELECT user_id FROM users WHERE role = 'doctor' LIMIT 1");
   const doctorId = doctor?.user_id ?? null;
 
-  // Clean up all removed demo placeholder accounts from database
+  await run('CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now())');
+
+  // Clean up and blacklist all removed demo placeholder accounts from database
+  await run(`
+    INSERT INTO deleted_users (email) VALUES
+      ('hassan.mohamed@patient.example'),
+      ('sara.ayman@patient.example'),
+      ('layla.ayman@patient.example'),
+      ('yasmine.gamal@patient.example'),
+      ('yaqeen.mohamed@patient.example'),
+      ('ali.mahmod@patient.example'),
+      ('moataz.ahmed@patient.example'),
+      ('aseel.aziz@patient.example'),
+      ('asmaa.salama@patient.example')
+    ON CONFLICT (email) DO NOTHING
+  `);
+
   await run(`
     DELETE FROM users WHERE role = 'patient' AND email IN (
       'hassan.mohamed@patient.example',
@@ -140,6 +156,8 @@ export async function seedDemoPatients() {
   `);
 
   for (const p of DEMO_PATIENTS) {
+    const wasDeleted = await one('SELECT 1 FROM deleted_users WHERE LOWER(email) = LOWER($1)', [p.email]);
+    if (wasDeleted) continue; // Permanently deleted by admin! Never resurrect!
     let user = await one<{ user_id: string }>("SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)", [p.email]);
     let userId = user?.user_id;
 

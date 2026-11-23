@@ -171,7 +171,11 @@ export const isApprovedDoctor = async (id: string) =>
 export const assignDoctor = (patientId: string, doctorId: string | null) =>
   run('UPDATE users SET doctor_id = $2 WHERE user_id = $1', [patientId, doctorId]);
 
-export const deleteUser = (id: string) => run('DELETE FROM users WHERE user_id = $1', [id]);
+export const deleteUser = async (id: string) => {
+  await run('CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now())');
+  await run('INSERT INTO deleted_users (email) SELECT LOWER(email) FROM users WHERE user_id = $1 AND email IS NOT NULL ON CONFLICT (email) DO NOTHING', [id]);
+  return run('DELETE FROM users WHERE user_id = $1', [id]);
+};
 
 /** removes the account and, through the cascade, every session it owns */
 export const deleteOwnAccount = (id: string) => run('DELETE FROM users WHERE user_id = $1', [id]);
