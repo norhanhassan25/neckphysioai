@@ -34,7 +34,13 @@ export default async function handler(req: Request, res: Response) {
   try {
     await initialized;
     app(req, res);
-  } catch {
-    if (!res.headersSent) res.status(503).json({ error: 'Database is unavailable or API setup is incomplete' });
+  } catch (err: any) {
+    if (!res.headersSent) res.status(503).json({ 
+      error: 'Database is unavailable or API setup is incomplete',
+      details: err?.message || String(err),
+      hasDbUrl: !!process.env.DATABASE_URL,
+      hasAuthSecret: !!process.env.AUTH_SECRET,
+      dbUrlHost: process.env.DATABASE_URL ? (process.env.DATABASE_URL.split('@')[1] || '').split('/')[0] : 'none'
+    });
   }
 }
