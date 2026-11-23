@@ -1,0 +1,461 @@
+import { useEffect, useRef, useState } from 'react';
+import { LogOut, RotateCcw, User, X } from 'lucide-react';
+import { applyTheme, getTheme, THEMES, Theme } from '../utils/theme';
+import { store, useScreen, useActiveTab, useUserData } from '../game/store';
+import { useAuth, useUser } from '../utils/auth';
+import { LanguageSwitch, useLanguage } from '../i18n/LanguageContext';
+
+// --- DOODLE ICONS ---
+export type DoodleKind = 'star' | 'flower' | 'heart' | 'cross' | 'leaf';
+
+interface DoodleProps {
+  kind: DoodleKind;
+  size?: number;
+  color?: string;
+  className?: string;
+}
+
+export function Doodle({ kind, size = 24, color = 'var(--line)', className = '' }: DoodleProps) {
+  if (kind === 'flower') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+        <circle cx="12" cy="12" r="3" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+        <circle cx="12" cy="6" r="3.5" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+        <circle cx="12" cy="18" r="3.5" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+        <circle cx="6" cy="12" r="3.5" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+        <circle cx="18" cy="12" r="3.5" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+      </svg>
+    );
+  }
+  if (kind === 'leaf') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+        <path d="M12 2C12 2 4 10 4 14C4 18.4 7.6 22 12 22C16.4 22 20 18.4 20 14C20 10 12 2 12 2Z" fill={color} stroke="var(--line)" strokeWidth="2.5" />
+        <path d="M12 22V6" stroke="var(--line)" strokeWidth="2.5" />
+        <path d="M12 14C12 14 15 12 17 13" stroke="var(--line)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M12 17C12 17 9 15 7 16" stroke="var(--line)" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === 'star') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+        <path
+          d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+          fill={color}
+          stroke="var(--line)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (kind === 'heart') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+        <path
+          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          fill={color}
+          stroke="var(--line)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  // Cross
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M12 2v20M2 12h20"
+        stroke={color}
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// --- WORDMARK ---
+export function Wordmark({ size = 32, dark = false }) {
+  return (
+    <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: size, color: dark ? 'white' : 'var(--ink)', letterSpacing: '-0.035em', overflowWrap: 'anywhere' }}>
+      NECK<span style={{ color: dark ? 'white' : 'var(--peach-deep)' }}>PHYSIO</span>AI
+    </span>
+  );
+}
+
+// --- BREADCRUMB ---
+interface BreadcrumbProps {
+  steps: string[];
+  here: number;
+}
+
+export function Breadcrumb({ steps, here }: BreadcrumbProps) {
+  return (
+    <div className="breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {steps.map((step, idx) => (
+        <span key={step} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          {idx > 0 && <span className="sep" style={{ fontWeight: 800, color: 'var(--ink-soft)' }}>/</span>}
+          {idx === here ? (
+            <span 
+              className="here popin" 
+              style={{ 
+                fontFamily: 'inherit',
+                fontWeight: 900,
+                fontSize: '13px',
+                color: 'var(--ink)',
+                background: 'var(--butter)',
+                border: '2.5px solid var(--line)',
+                borderRadius: '8px',
+                padding: '4px 12px',
+                boxShadow: 'var(--plush-tiny)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}
+            >
+              {step}
+            </span>
+          ) : (
+            <span style={{ opacity: 0.6, fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{step}</span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// --- TOPBAR ---
+interface TopBarProps {
+  here: number;
+  steps: string[];
+  userName?: string;
+  showProfile?: boolean;
+}
+
+const THEME_SWATCH: Record<Theme, { label: string; background: string }> = {
+  sunshine: { label: 'Sunshine', background: 'linear-gradient(135deg, #FFD86B 50%, #FFB68A 50%)' },
+  orchid: { label: 'Orchid', background: 'linear-gradient(135deg, #C9B8FF 50%, #FFD9F2 50%)' },
+  midnight: { label: 'Midnight', background: 'linear-gradient(135deg, #221F2E 50%, #6EE7B7 50%)' },
+  bluewhite: { label: 'Blue & White', background: 'linear-gradient(135deg, #ffffff 50%, #2589ed 50%)' },
+};
+
+export function ThemeSwitch() {
+  const [theme, setTheme] = useState<Theme>(() => getTheme());
+
+  return (
+    <div className="theme-switch" role="group" aria-label="Colour theme">
+      {THEMES.map((name) => (
+        <button
+          key={name}
+          onClick={() => {
+            setTheme(name);
+            applyTheme(name);
+          }}
+          aria-pressed={theme === name}
+          aria-label={`${THEME_SWATCH[name].label} theme`}
+          title={`${THEME_SWATCH[name].label} theme`}
+          style={{ background: THEME_SWATCH[name].background }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ProfileMenu() {
+  const { user } = useUser();
+  const { signOut, userId } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  if (!user) return null;
+
+  return (
+    <div style={{ position: 'relative' }} ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
+        style={{
+          width: 38,
+          height: 38,
+          padding: 0,
+          borderRadius: '50%',
+          border: '2.5px solid var(--line)',
+          boxShadow: 'var(--plush-tiny)',
+          background: 'var(--surface)',
+          overflow: 'hidden',
+          cursor: 'pointer',
+          display: 'flex',
+        }}
+      >
+        <img src={user.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </button>
+
+      {open && (
+        <div className="menu-sheet" role="menu">
+          <div style={{ padding: '6px 10px 10px', borderBottom: '2px dashed var(--line)', marginBottom: 6 }}>
+            <div style={{ fontWeight: 900, fontSize: 13.5 }}>{user.fullName}</div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-soft)', wordBreak: 'break-all' }}>
+              {user.primaryEmailAddress.emailAddress}
+            </div>
+          </div>
+          <button
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              store.setScreen('onboarding');
+            }}
+          >
+            <User size={15} />
+            Edit profile
+          </button>
+          <button
+            role="menuitem"
+            className="danger"
+            onClick={() => {
+              if (!userId) return;
+              if (window.confirm('Reset your profile? This deletes your profile details and every saved session.')) {
+                setOpen(false);
+                store.resetOnboarding(userId);
+              }
+            }}
+          >
+            <RotateCcw size={15} />
+            Reset profile data
+          </button>
+          <button role="menuitem" className="danger" onClick={signOut}>
+            <LogOut size={15} />
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function TopBar({ here, steps, showProfile = true }: TopBarProps) {
+  const { language } = useLanguage();
+  const local=(en:string,ar:string)=>language==='ar'?ar:en;
+  const currentScreen = useScreen();
+  const activeTab = useActiveTab();
+  const userData = useUserData();
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  // clinicians and admins have their own workspace, so don't show them patient links
+  const navItems =
+    userData?.role === 'admin'
+      ? [{ label: local('Accounts','الحسابات'), isActive: currentScreen === 'admin', action: () => store.setScreen('admin') }]
+      : userData?.role === 'doctor'
+        ? [{ label: local('Patients','المرضى'), isActive: currentScreen === 'doctor', action: () => store.setScreen('doctor') }]
+        : [
+            { label: local('Home','الرئيسية'), isActive: currentScreen === 'landing', action: () => store.setScreen('landing') },
+            { label: local('Dashboard','لوحة التحكم'), isActive: currentScreen === 'dashboard' && activeTab === 'dashboard', action: () => store.setActiveTab('dashboard') },
+            { label: local('Pose Library','تمارين الرقبة'), isActive: currentScreen === 'library', action: () => store.setScreen('library') },
+            { label: local('Coaches','مساعد العلاج الطبيعي'), isActive: currentScreen === 'dashboard' && activeTab === 'consult', action: () => store.setActiveTab('consult') },
+          ];
+
+  const home = userData?.role === 'admin' ? 'admin' : userData?.role === 'doctor' ? 'doctor' : 'dashboard';
+
+  return (
+    <div className="appbar">
+      <button
+        onClick={() => store.setScreen(home)}
+        title="Back to your dashboard"
+        style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+      >
+        <Wordmark size={24} />
+      </button>
+
+      {showProfile ? (
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={item.action}
+              className={`navpill${item.isActive ? ' is-active' : ''}`}
+              aria-current={item.isActive ? 'page' : undefined}
+            >
+              {item.label}
+            </button>
+          ))}
+          <button className="navpill" onClick={() => setHelpOpen(true)}>
+            {local('Help','مساعدة')}
+          </button>
+        </nav>
+      ) : (
+        <Breadcrumb steps={steps} here={here} />
+      )}
+
+      {showProfile ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <LanguageSwitch />
+          <ThemeSwitch />
+          <ProfileMenu />
+        </div>
+      ) : (
+        <><LanguageSwitch /><ThemeSwitch /></>
+      )}
+
+      {/* Help Modal */}
+      {helpOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 20
+        }}>
+          <div className="plush popin" style={{
+            background: 'var(--surface)',
+            maxWidth: 580,
+            width: '100%',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 'var(--r-md)',
+            overflow: 'hidden',
+            border: '2.5px solid var(--line)',
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              borderBottom: '2.5px solid var(--line)',
+              background: 'var(--mint)',
+            }}>
+              <h3 style={{ fontSize: 20, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>
+                NECKPHYSIOAI Guide & FAQs
+              </h3>
+              <button
+                onClick={() => setHelpOpen(false)}
+                className="tap"
+                style={{
+                  padding: '4px',
+                  borderRadius: '50%',
+                  width: 30,
+                  height: 30,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  border: '2.5px solid var(--line)',
+                  background: 'var(--surface)',
+                  boxShadow: 'var(--plush-tiny)'
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: 24,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 20,
+              background: 'var(--cream)',
+            }}>
+              {/* Quick Instructions */}
+              <div className="plush" style={{ padding: 18, background: 'var(--surface)', border: '2.5px solid var(--line)', borderRadius: 'var(--r-sm)' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 0, marginBottom: 8 }}>
+                  How to use NECKPHYSIOAI
+                </h4>
+                <ol style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink-2)', paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 6, margin: 0 }}>
+                  <li>Log your daily stiffness using the <strong>Pain Tracker</strong> on the dashboard.</li>
+                  <li>Follow your automatically adapted <strong>Daily Roadmap</strong>.</li>
+                  <li>Head to the <strong>Pose Library</strong> to practice with real-time AI posture feedback via your webcam.</li>
+                  <li>Read your post-session <strong>OSCE Grade report card</strong> powered by Google Gemini AI.</li>
+                  <li>Consult our specialized AI coaches in the <strong>Chatbot</strong> section for customized advice.</li>
+                </ol>
+              </div>
+
+              {/* FAQs */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <h4 style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', margin: '0 0 4px 0' }}>
+                  Frequently Asked Questions
+                </h4>
+                
+                <div className="plush" style={{ padding: 14, background: 'var(--surface)', border: '2.5px solid var(--line)', borderRadius: 'var(--r-sm)' }}>
+                  <h5 style={{ fontSize: 14, fontWeight: 900, color: 'var(--ink)', margin: '0 0 6px 0' }}>
+                    How does the real-time pose tracking work?
+                  </h5>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink-soft)', margin: 0, lineHeight: 1.4 }}>
+                    NECKPHYSIOAI uses Google MediaPipe in your browser to track 33 skeleton coordinates in real-time. No video is ever sent to servers—it's 100% private and runs local-first.
+                  </p>
+                </div>
+
+                <div className="plush" style={{ padding: 14, background: 'var(--surface)', border: '2.5px solid var(--line)', borderRadius: 'var(--r-sm)' }}>
+                  <h5 style={{ fontSize: 14, fontWeight: 900, color: 'var(--ink)', margin: '0 0 6px 0' }}>
+                    What does the AI Attending Coach do?
+                  </h5>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink-soft)', margin: 0, lineHeight: 1.4 }}>
+                    Once you complete a pose session, your metrics (hold times, angles, deviations) are analyzed by Google Gemini AI to generate a clinical grade (A, B, C, F) and alignment cues.
+                  </p>
+                </div>
+
+                <div className="plush" style={{ padding: 14, background: 'var(--surface)', border: '2.5px solid var(--line)', borderRadius: 'var(--r-sm)' }}>
+                  <h5 style={{ fontSize: 14, fontWeight: 900, color: 'var(--ink)', margin: '0 0 6px 0' }}>
+                    Who are the three specialized AI Yoga Coaches?
+                    {" "}
+                  </h5>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink-soft)', margin: 0, lineHeight: 1.4 }}>
+                    You can consult Zen Master Anya (for mindful breathing & alignment flows), Coach Rocky (for core strength building), or Dr. Maya (a physical therapy specialist for joint modifications).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- CUTE AVATAR ---
+export function CuteFace({ size = 80, skin = '#FFD8B5', mood = 'happy' }) {
+  const stroke = 'var(--line)';
+  return (
+    <svg width={size} height={size} viewBox="0 0 200 200">
+      {/* Hair back */}
+      <circle cx="100" cy="100" r="72" fill="var(--ink-2)" />
+      {/* Face circle */}
+      <circle cx="100" cy="104" r="62" fill={skin} stroke={stroke} strokeWidth="6" />
+      {/* Hair top cut */}
+      <path d="M 42 78 Q 60 38 100 40 Q 140 38 158 78 Q 130 60 100 64 Q 70 60 42 78 Z" fill="var(--ink-2)" stroke={stroke} strokeWidth="3" />
+      {/* Blush */}
+      <ellipse cx="70" cy="120" rx="10" ry="7" fill="#FF9DAA" opacity="0.8" />
+      <ellipse cx="130" cy="120" rx="10" ry="7" fill="#FF9DAA" opacity="0.8" />
+      {/* Eyes */}
+      <circle cx="78" cy="104" r="6" fill={stroke} />
+      <circle cx="122" cy="104" r="6" fill={stroke} />
+      {/* Mouth */}
+      {mood === 'happy' ? (
+        <path d="M 85 130 Q 100 152 115 130" stroke={stroke} strokeWidth="5" fill="none" strokeLinecap="round" />
+      ) : (
+        <path d="M 85 136 Q 100 125 115 136" stroke={stroke} strokeWidth="5" fill="none" strokeLinecap="round" />
+      )}
+    </svg>
+  );
+}
+

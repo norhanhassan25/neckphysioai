@@ -1,0 +1,514 @@
+/* PhysioAlign — global styles, theme variables, and shared layout classes. */
+
+:root {
+  /* SUNSHINE palette — peach, butter, mint, sky, cream */
+  --cream: #FFF6E6;
+  --cream-2: #FFEFD1;
+  --peach: #FFB68A;
+  --peach-deep: #FF8E5C;
+  --butter: #FFD86B;
+  --butter-deep: #F5B73D;
+  --mint: #A8E5C8;
+  --mint-deep: #5FCFA0;
+  --sky: #A6D8FF;
+  --sky-deep: #5AB7F2;
+  --rose: #FFB3C0;
+  --rose-deep: #F47A92;
+  --ink: #3B2A1F;
+  --ink-2: #6B4F3F;
+  --ink-soft: #7A6252;
+  --line: #2B1E16;       /* cartoon outline */
+  --paper: #FFFAF0;
+  --surface: #FFFFFF;
+  --shadow: rgba(43,30,22,0.18);
+  --skeleton-ok: #3FBF8F;
+  --skeleton-off: #F2663F;
+  --skeleton-idle: #8C7B6B;
+
+  --r-sm: 14px;
+  --r-md: 22px;
+  --r-lg: 36px;
+  --r-pill: 999px;
+
+  --stroke-sm: 2.5px;
+  --stroke: 3px;
+  --stroke-thick: 3px;
+
+  /* offset "sticker" shadow, one step per elevation */
+  --plush: 0 5px 0 var(--line), 0 12px 24px rgba(43,30,22,0.12);
+  --plush-sm: 0 3px 0 var(--line), 0 6px 14px rgba(43,30,22,0.10);
+  --plush-tiny: 0 2px 0 var(--line);
+  --ring: 0 0 0 4px rgba(255,142,92,0.35);
+}
+
+/* ---- themes ---------------------------------------------------------
+   Sunshine is the default. Orchid keeps the same shapes with a cooler
+   palette, Midnight is the dark one for practising in a dim room.      */
+
+:root[data-theme='bluewhite'] {
+  --cream: #f2f8ff;
+  --cream-2: #e4f1ff;
+  --peach: #9bcaff;
+  --peach-deep: #2589ed;
+  --butter: #d3e8ff;
+  --butter-deep: #5ca7f4;
+  --mint: #b8e3ff;
+  --mint-deep: #358ad1;
+  --sky: #a4d7ff;
+  --sky-deep: #2378d6;
+  --rose: #ffd7db;
+  --rose-deep: #d14c65;
+  --ink: #163354;
+  --ink-2: #345678;
+  --ink-soft: #537491;
+  --line: #244b70;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --shadow: rgba(30, 89, 148, 0.17);
+  --ring: 0 0 0 4px rgba(37,137,237,.24);
+}
+
+:root[data-theme='orchid'] {
+  --cream: #F7F2FF;
+  --cream-2: #EDE3FF;
+  --peach: #C9B8FF;
+  --peach-deep: #7C5CFF;
+  --butter: #FFD9F2;
+  --butter-deep: #F49BD8;
+  --mint: #BFF0DC;
+  --mint-deep: #3FC99B;
+  --sky: #C3DBFF;
+  --sky-deep: #5B9BF8;
+  --rose: #FFC3D8;
+  --rose-deep: #F2679B;
+  --ink: #2A2142;
+  --ink-2: #4A3D6B;
+  --ink-soft: #6B5E88;
+  --line: #2A2142;
+  --paper: #FCF9FF;
+  --surface: #FFFFFF;
+}
+
+:root[data-theme='midnight'] {
+  --cream: #15141C;
+  --cream-2: #221F2E;
+  --peach: #FF9F6B;
+  --peach-deep: #FFB183;
+  --butter: #FFD36B;
+  --butter-deep: #FFC247;
+  --mint: #6EE7B7;
+  --mint-deep: #34D399;
+  --sky: #7DD3FC;
+  --sky-deep: #38BDF8;
+  --rose: #FDA4C7;
+  --rose-deep: #FB7185;
+  --ink: #F7F2EC;
+  --ink-2: #E2D8CE;
+  --ink-soft: #B4A697;
+  --line: #EFE7DC;
+  --paper: #1C1A25;
+  --surface: #221F2E;
+  --shadow: rgba(0,0,0,0.5);
+  --skeleton-ok: #4ADE80;
+  --skeleton-off: #FB7185;
+  --skeleton-idle: #CBB9A6;
+}
+
+/* accent-coloured chips keep dark text in the dark theme, since the
+   accents stay bright */
+:root[data-theme='midnight'] .chip.peach,
+:root[data-theme='midnight'] .chip.butter,
+:root[data-theme='midnight'] .chip.mint,
+:root[data-theme='midnight'] .chip.sky,
+:root[data-theme='midnight'] .chip.rose,
+:root[data-theme='midnight'] .btn-plush.primary,
+:root[data-theme='midnight'] .btn-plush.mint,
+:root[data-theme='midnight'] .btn-plush.sky,
+:root[data-theme='midnight'] .btn-plush.rose,
+:root[data-theme='midnight'] .btn-plush.danger,
+:root[data-theme='midnight'] .navpill.is-active {
+  color: #15141C;
+}
+
+:root[data-theme='midnight'] .btn-plush.ghost {
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring), var(--plush-tiny);
+  border-radius: var(--r-sm);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  transition: background-color 220ms ease, color 220ms ease;
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App shell */
+.app {
+  width: 100vw;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Plush primitives */
+.plush {
+  border: var(--stroke-sm) solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--plush-sm);
+  background: var(--surface);
+}
+
+.plush-lg {
+  border: var(--stroke) solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--plush);
+  background: var(--surface);
+}
+
+.btn-plush {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 11px 22px;
+  border: var(--stroke-sm) solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--butter);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--plush-sm);
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-plush:hover { transform: translateY(-2px); }
+.btn-plush:active {
+  transform: translateY(2px);
+  box-shadow: var(--plush-tiny);
+}
+.btn-plush.primary { background: var(--peach); color: var(--ink); }
+.btn-plush.mint { background: var(--mint); }
+.btn-plush.sky { background: var(--sky); }
+.btn-plush.rose { background: var(--rose); }
+.btn-plush.ghost { background: var(--surface); }
+.btn-plush.danger { background: var(--rose); }
+.btn-plush.sm { font-size: 14px; padding: 8px 16px; }
+.btn-plush:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 0 2px 0 var(--line) !important;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 11px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--plush-tiny);
+  white-space: nowrap;
+}
+.chip.peach { background: var(--peach); }
+.chip.butter { background: var(--butter); }
+.chip.mint { background: var(--mint); }
+.chip.sky { background: var(--sky); }
+.chip.rose { background: var(--rose); }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); display: inline-block; }
+
+/* App bar */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 22px;
+  background: var(--surface);
+  border-bottom: var(--stroke-sm) solid var(--line);
+}
+
+.navpill {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--r-pill);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.navpill:hover { background: var(--cream); }
+.navpill.is-active {
+  background: var(--butter);
+  border-color: var(--line);
+  box-shadow: var(--plush-tiny);
+}
+
+.menu-sheet {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 210px;
+  background: var(--surface);
+  border: var(--stroke-sm) solid var(--line);
+  border-radius: var(--r-sm);
+  box-shadow: var(--plush-sm);
+  padding: 8px;
+  z-index: 100;
+  text-align: left;
+}
+.menu-sheet button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  background: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+}
+.menu-sheet button:hover { background: var(--cream); }
+.menu-sheet button.danger:hover { background: #FFEAE6; color: #D1452B; }
+
+@media (max-width: 860px) {
+  .appbar { flex-wrap: wrap; padding: 12px 16px; }
+  .appbar nav { order: 3; width: 100%; overflow-x: auto; }
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--plush-tiny);
+}
+.theme-switch button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.theme-switch button:hover { transform: translateY(-1px); }
+.theme-switch button[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--line);
+}
+
+/* Background patterns */
+.paper {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(rgba(43,30,22,0.04) 1px, transparent 1px),
+    radial-gradient(rgba(43,30,22,0.03) 1px, transparent 1px);
+  background-size: 12px 12px, 28px 28px;
+  background-position: 0 0, 6px 8px;
+}
+
+.dots-bg {
+  background-image: radial-gradient(rgba(43,30,22,0.13) 2px, transparent 2.5px);
+  background-size: 22px 22px;
+}
+
+/* Animations */
+@keyframes wobble-soft {
+  0%,100% { transform: rotate(-1.2deg); }
+  50%     { transform: rotate(1.2deg); }
+}
+@keyframes float-up {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+@keyframes breathe {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.03); }
+}
+@keyframes pop-in {
+  0%   { transform: translateY(8px); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
+.wobble  { animation: wobble-soft 3.6s ease-in-out infinite; transform-origin: 50% 90%; }
+.floaty  { animation: float-up 3s ease-in-out infinite; }
+.breathe { animation: breathe 3.5s ease-in-out infinite; }
+.popin   { animation: pop-in 260ms cubic-bezier(.22,1,.36,1) backwards; }
+
+.tap {
+  cursor: pointer;
+  transition: transform 140ms cubic-bezier(.5,1.7,.4,1);
+}
+.tap:hover { transform: translateY(-2px); }
+.tap:active { transform: translateY(1px); }
+
+/* Typography */
+h1, h2, h3, h4 { font-family: 'Nunito', sans-serif; letter-spacing: -0.01em; margin: 0; }
+h1 { font-weight: 900; }
+h2 { font-weight: 800; }
+h3 { font-weight: 700; }
+
+.screen { width: 100%; min-height: 100vh; overflow-x: hidden; position: relative; }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cream);
+  border-left: 2px solid var(--line);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-soft);
+  border: 2px solid var(--cream);
+  border-radius: 5px;
+}
+
+/* Camera & Pose Checking layout */
+.camera-container {
+  position: relative;
+  border: var(--stroke-thick) solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--plush);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 4/3;
+  width: 100%;
+}
+
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror camera for natural movement */
+}
+
+.skeleton-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  transform: scaleX(-1); /* Mirror canvas to match the webcam */
+}
+
+/* Attending Coach Report */
+.debrief-report {
+  background: var(--paper);
+  border: var(--stroke) solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--plush-sm);
+  padding: 24px;
+}
+
+.debrief-grade-badge {
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--r-md);
+  border: var(--stroke-thick) solid var(--line);
+  box-shadow: var(--plush-sm);
+  background: var(--butter);
+  color: var(--ink);
+  transform: rotate(-3deg);
+}
+
+.debrief-grade-badge.a { background: var(--mint); }
+.debrief-grade-badge.b { background: var(--mint); opacity: 0.9; }
+.debrief-grade-badge.c { background: var(--butter); }
+.debrief-grade-badge.f { background: var(--rose); }
+
+/* Markdown styling inside AI Coach Feedback card */
+.ai-critique-content {
+  line-height: 1.6;
+  font-size: 15px;
+}
+.ai-critique-content p {
+  margin: 0 0 12px;
+}
+.ai-critique-content ul, .ai-critique-content ol {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+.ai-critique-content li {
+  margin-bottom: 6px;
+}
+.ai-critique-content h3 {
+  font-size: 18px;
+  margin: 16px 0 8px;
+  color: var(--ink-2);
+}
+.ai-critique-content h4 {
+  font-size: 15px;
+  margin: 12px 0 6px;
+  color: var(--ink-soft);
+}
+.ai-critique-content blockquote {
+  margin: 8px 0;
+  padding: 8px 14px;
+  background: var(--cream-2);
+  border-left: 4px solid var(--peach);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-style: italic;
+}
+
+/* Breathing pacer ring: scales with the inhale/exhale phase */
+.breath-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  box-shadow: var(--plush-tiny);
+  transition-property: transform, background-color;
+  transition-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breath-ring { transition-duration: 1ms !important; }
+}
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin { animation: spin-slow 900ms linear infinite; }
