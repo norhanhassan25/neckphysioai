@@ -208,14 +208,9 @@ export async function seedDemoPatients() {
       );
     }
 
-    // Check existing sessions count
+    // Check existing sessions count - only seed if the patient has 0 sessions, so any new session they perform persists and increments!
     const existingCount = await one<{ count: number }>("SELECT COUNT(*)::int AS count FROM sessions WHERE user_id = $1", [userId]);
-    if ((existingCount?.count ?? 0) < p.sessions.length) {
-      // Clear old sessions to ensure exact requested counts and averages
-      await run("DELETE FROM sessions WHERE user_id = $1", [userId]);
-      await run("DELETE FROM neck_tracking_sessions WHERE user_id = $1", [userId]);
-      await run("DELETE FROM neck_assessments WHERE user_id = $1", [userId]);
-
+    if ((existingCount?.count ?? 0) === 0) {
       // Insert initial NDI assessment
       const ndiAnswers = {
         ndi: [1, 2, 1, 2, 1, 1, 2, 1, 2, 1], // Mild neck disability
