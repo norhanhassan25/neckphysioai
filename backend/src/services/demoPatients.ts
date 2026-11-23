@@ -125,6 +125,7 @@ export async function seedDemoPatients() {
   const doctorId = doctor?.user_id ?? null;
 
   await run('CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now())');
+  await run('CREATE TABLE IF NOT EXISTS system_init (key TEXT PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT now())');
 
   // Clean up and blacklist all removed demo placeholder accounts from database
   await run(`
@@ -154,6 +155,12 @@ export async function seedDemoPatients() {
       'asmaa.salama@patient.example'
     )
   `);
+
+  // If already seeded once, NEVER re-insert or resurrect any users!
+  const alreadySeeded = await one("SELECT 1 FROM system_init WHERE key = 'demo_seeded_final'");
+  if (alreadySeeded) {
+    return;
+  }
 
   for (const p of DEMO_PATIENTS) {
     const wasDeleted = await one('SELECT 1 FROM deleted_users WHERE LOWER(email) = LOWER($1)', [p.email]);
@@ -242,5 +249,6 @@ export async function seedDemoPatients() {
     }
   }
 
+  await run("INSERT INTO system_init (key) VALUES ('demo_seeded_final') ON CONFLICT (key) DO NOTHING");
   console.log(`[demo] Seeded ${DEMO_PATIENTS.length} patients with verified session history & score averages.`);
 }
