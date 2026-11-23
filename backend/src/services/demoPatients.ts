@@ -69,25 +69,7 @@ function createNineSessions(scores: number[], poseCycleOffset = 0) {
 }
 
 export const DEMO_PATIENTS: PatientSeedConfig[] = [
-  // 1. hassan mohamed: 9 sessions, 9 days, average 66% (Sum = 594)
-  {
-    name: 'hassan mohamed',
-    email: 'hassan.mohamed@patient.example',
-    age: 29,
-    experience: 'Intermediate',
-    goal: 'Relieve neck tension & improve posture',
-    sessions: createNineSessions([63, 64, 65, 66, 66, 67, 67, 68, 68], 0)
-  },
-  // 2. sara ayman: 9 sessions, 9 days, average 78% (Sum = 702)
-  {
-    name: 'sara ayman',
-    email: 'sara.ayman@patient.example',
-    age: 24,
-    experience: 'Beginner',
-    goal: 'Reduce stiffness from desk work',
-    sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 1)
-  },
-  // 3. Alzahraa salama: 9 sessions, 9 days, average 71% (Sum = 639)
+  // 1. Alzahraa salama: 9 sessions, 9 days, average 71% (Sum = 639)
   {
     name: 'Alzahraa salama',
     email: 'alzahraa@example.com',
@@ -96,7 +78,7 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Strengthen cervical flexors',
     sessions: createNineSessions([67, 68, 69, 70, 71, 72, 73, 74, 75], 2)
   },
-  // 4. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
+  // 2. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
   {
     name: 'اسيل محمد عزيز',
     email: 'aseelmohammed@gmail.com',
@@ -105,25 +87,7 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Improve neck mobility & proprioception',
     sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 3)
   },
-  // 5. ليلى ايمن: 9 sessions, 9 days, average 80% (Sum = 720)
-  {
-    name: 'ليلى ايمن',
-    email: 'layla.ayman@patient.example',
-    age: 27,
-    experience: 'Advanced',
-    goal: 'Rehab after neck spasm',
-    sessions: createNineSessions([76, 77, 78, 79, 80, 81, 82, 83, 84], 4)
-  },
-  // 6. ياسمين جمال فتحي: 9 sessions, 9 days, average 74% (Sum = 666)
-  {
-    name: 'ياسمين جمال فتحي',
-    email: 'yasmine.gamal@patient.example',
-    age: 25,
-    experience: 'Beginner',
-    goal: 'Posture alignment & ergonomic comfort',
-    sessions: createNineSessions([70, 71, 72, 73, 74, 75, 76, 77, 78], 5)
-  },
-  // 7. ahmed mohamed mahmoud: 9 sessions, 9 days, average 78% (Sum = 702)
+  // 3. ahmed mohamed mahmoud: 9 sessions, 9 days, average 78% (Sum = 702)
   {
     name: 'ahmed mohamed mahmoud',
     email: 'ahmed.m.mahmoud@patient.example',
@@ -132,25 +96,7 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Neck stability during athletic training',
     sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 0)
   },
-  // 8. يقين محمد: 9 sessions, 9 days, average 64% (Sum = 576)
-  {
-    name: 'يقين محمد',
-    email: 'yaqeen.mohamed@patient.example',
-    age: 23,
-    experience: 'Beginner',
-    goal: 'Relieve upper neck tension',
-    sessions: createNineSessions([60, 61, 62, 63, 64, 65, 66, 67, 68], 1)
-  },
-  // 9. ali mahmod: 9 sessions, 9 days, average 76% (Sum = 684)
-  {
-    name: 'ali mahmod',
-    email: 'ali.mahmod@patient.example',
-    age: 34,
-    experience: 'Intermediate',
-    goal: 'Rehab from chronic neck strain',
-    sessions: createNineSessions([72, 73, 74, 75, 76, 77, 78, 79, 80], 2)
-  },
-  // 10. احمد حسين: 1 session, 1 day, average 55%
+  // 4. احمد حسين: 1 session, 1 day, average 55%
   {
     name: 'احمد حسين',
     email: 'ahmed.hussein@patient.example',
@@ -167,15 +113,6 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
         holdTime: 20
       }
     ]
-  },
-  // 11. moataz ahmed: 9 sessions, 9 days, average 60% (Sum = 540)
-  {
-    name: 'moataz ahmed',
-    email: 'moataz.ahmed@patient.example',
-    age: 32,
-    experience: 'Intermediate',
-    goal: 'Range of motion restoration',
-    sessions: createNineSessions([56, 57, 58, 59, 60, 61, 62, 63, 64], 3)
   }
 ];
 
@@ -187,8 +124,20 @@ export async function seedDemoPatients() {
   const doctor = await one<{ user_id: string }>("SELECT user_id FROM users WHERE role = 'doctor' LIMIT 1");
   const doctorId = doctor?.user_id ?? null;
 
-  // Clean up any legacy placeholder emails
-  await run("DELETE FROM users WHERE email IN ('aseel.aziz@patient.example', 'asmaa.salama@patient.example')");
+  // Clean up all removed demo placeholder accounts from database
+  await run(`
+    DELETE FROM users WHERE role = 'patient' AND email IN (
+      'hassan.mohamed@patient.example',
+      'sara.ayman@patient.example',
+      'layla.ayman@patient.example',
+      'yasmine.gamal@patient.example',
+      'yaqeen.mohamed@patient.example',
+      'ali.mahmod@patient.example',
+      'moataz.ahmed@patient.example',
+      'aseel.aziz@patient.example',
+      'asmaa.salama@patient.example'
+    )
+  `);
 
   for (const p of DEMO_PATIENTS) {
     let user = await one<{ user_id: string }>("SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)", [p.email]);
