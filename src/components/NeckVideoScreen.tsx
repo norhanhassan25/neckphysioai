@@ -62,7 +62,7 @@ export function NeckVideoScreen() {
                 src={youtubeEmbed(exercise.videoUrl)!}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                style={{ width: '100%', height: 420, border: 0, borderRadius: 16 }}
+                style={{ width: '100%', aspectRatio: '16/9', height: 'auto', maxHeight: 420, border: 0, borderRadius: 16 }}
               />
             ) : (
               <a href={exercise.videoUrl} target="_blank" rel="noreferrer">

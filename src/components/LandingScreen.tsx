@@ -27,12 +27,12 @@ export function LandingScreen({ onStartLogin, onEnterPractice }: LandingScreenPr
   return (
     <div className="screen dots-bg" dir={language==='ar'?'rtl':'ltr'} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {isSignedIn ? <TopBar here={0} steps={['Home']} /> : (
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '18px clamp(18px, 5vw, 52px)', background: 'var(--surface)', borderBottom: '2px solid var(--line)' }}>
-          <Wordmark size={27} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, padding: '14px clamp(14px, 4vw, 48px)', background: 'var(--surface)', borderBottom: '2px solid var(--line)' }}>
+          <Wordmark size={25} />
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <LanguageSwitch />
             <ThemeSwitch />
-            <button className="btn-plush primary" onClick={onStartLogin} style={{ padding: '10px 18px' }}>{tr('Log in','تسجيل الدخول')}</button>
+            <button className="btn-plush primary" onClick={onStartLogin} style={{ padding: '8px 16px', fontSize: 14 }}>{tr('Log in','تسجيل الدخول')}</button>
           </div>
         </header>
       )}

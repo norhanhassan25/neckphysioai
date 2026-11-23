@@ -375,19 +375,21 @@ export function AdminPortal() {
         </div>
 
         {/* Navigation Tabs */}
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <button
             onClick={() => setActiveTab('users')}
             className={`tap btn-plush ${activeTab === 'users' ? 'primary' : 'ghost'}`}
             style={{
-              padding: '12px 24px',
+              padding: '12px 20px',
               borderRadius: 14,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: 900,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: 8,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flex: '1 1 220px'
             }}
           >
             <UsersIcon size={18} /> {tr('User Accounts & Permissions', 'إدارة المستخدمين وحذف الحسابات')}
@@ -397,14 +399,16 @@ export function AdminPortal() {
             onClick={() => setActiveTab('exercises')}
             className={`tap btn-plush ${activeTab === 'exercises' ? 'primary' : 'ghost'}`}
             style={{
-              padding: '12px 24px',
+              padding: '12px 20px',
               borderRadius: 14,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: 900,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: 8,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flex: '1 1 220px'
             }}
           >
             <Dumbbell size={18} /> {tr('Exercise & Repetitions Management', 'إدارة وتعديل التمارين والتكرارات')}
