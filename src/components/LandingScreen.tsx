@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../utils/auth';
-import { Wordmark, TopBar, ThemeSwitch } from './primitives';
+import { Wordmark, TopBar, ThemeSwitch, LanguageSwitch } from './primitives';
 import { store } from '../game/store';
 import { Heart, HeartHandshake, ClipboardList, Video, ScanFace, ArrowRight, ChevronDown, ShieldCheck } from 'lucide-react';
 
@@ -30,6 +30,7 @@ export function LandingScreen({ onStartLogin, onEnterPractice }: LandingScreenPr
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '18px clamp(18px, 5vw, 52px)', background: 'var(--surface)', borderBottom: '2px solid var(--line)' }}>
           <Wordmark size={27} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <LanguageSwitch />
             <ThemeSwitch />
             <button className="btn-plush primary" onClick={onStartLogin} style={{ padding: '10px 18px' }}>{tr('Log in','تسجيل الدخول')}</button>
           </div>
