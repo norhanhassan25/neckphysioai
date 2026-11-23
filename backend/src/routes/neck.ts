@@ -104,6 +104,40 @@ const exerciseSchema=z.object({
   planHoldSeconds:z.number().int().min(0).max(120).nullable().optional(),
   planRestSeconds:z.number().int().min(0).max(300).nullable().optional(),
 });
+neckRouter.post('/doctor/exercises', requireRole('doctor','admin'), asyncHandler(async(req,res) => {
+  const newSchema = exerciseSchema.extend({
+    id: z.string().min(2).max(64)
+  });
+  const parsed = newSchema.safeParse(req.body);
+  if (!parsed.success) throw badRequest('Invalid exercise configuration');
+  const e = parsed.data;
+  if (e.videoUrl && !/^https:\/\//i.test(e.videoUrl)) throw badRequest('Use an HTTPS video URL');
+  const row = await one(
+    `INSERT INTO neck_exercises (
+      id, title, description, instructions, video_url, active,
+      rule_approved, min_ndi, max_ndi, rule_priority,
+      plan_reps, plan_sets, plan_hold_seconds, plan_rest_seconds
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    ON CONFLICT (id) DO UPDATE SET
+      title = EXCLUDED.title,
+      description = EXCLUDED.description,
+      instructions = EXCLUDED.instructions,
+      video_url = EXCLUDED.video_url,
+      active = EXCLUDED.active,
+      plan_reps = EXCLUDED.plan_reps,
+      plan_sets = EXCLUDED.plan_sets,
+      plan_hold_seconds = EXCLUDED.plan_hold_seconds,
+      plan_rest_seconds = EXCLUDED.plan_rest_seconds
+    RETURNING id`,
+    [
+      e.id, e.title, e.description, e.instructions || '', e.videoUrl || null, e.active ?? true,
+      e.ruleApproved ?? false, e.minNdi ?? 0, e.maxNdi ?? 100, e.rulePriority ?? 100,
+      e.planReps ?? null, e.planSets ?? null, e.planHoldSeconds ?? null, e.planRestSeconds ?? null
+    ]
+  );
+  res.status(201).json(row);
+}));
+
 neckRouter.put('/doctor/exercises/:id', requireRole('doctor','admin'), asyncHandler(async(req,res) => {
   const parsed=exerciseSchema.safeParse(req.body);
   if (!parsed.success) throw badRequest('Invalid exercise configuration');

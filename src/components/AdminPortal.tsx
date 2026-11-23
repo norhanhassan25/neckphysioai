@@ -21,7 +21,8 @@ import {
   X,
   Award,
   Flame,
-  Heart
+  Heart,
+  Plus
 } from 'lucide-react';
 
 interface SystemStats {
@@ -74,6 +75,7 @@ export function AdminPortal() {
 
   // Exercise management state
   const [neckExercises, setNeckExercises] = useState<any[]>([]);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<any>({
     id: '',
     title: '',
@@ -242,23 +244,47 @@ export function AdminPortal() {
   };
 
   const handleSaveExercise = async () => {
-    if (!selectedExercise.id) return;
+    if (!selectedExercise.id || !selectedExercise.id.trim()) {
+      setExerciseSaveMessage({
+        text: tr('Exercise ID is required', 'معرّف التمرين مطلوب (باللغة الإنجليزية بدون مسافات)'),
+        ok: false
+      });
+      return;
+    }
+    if (!selectedExercise.title || !selectedExercise.title.trim()) {
+      setExerciseSaveMessage({
+        text: tr('Exercise title is required', 'اسم التمرين مطلوب'),
+        ok: false
+      });
+      return;
+    }
+
     setIsSavingExercise(true);
     setExerciseSaveMessage(null);
     try {
-      const res = await apiFetch(`/api/neck/doctor/exercises/${selectedExercise.id}`, {
-        method: 'PUT',
+      const formattedId = selectedExercise.id.trim().toLowerCase().replace(/\s+/g, '-');
+      const url = isCreatingNew 
+        ? '/api/neck/doctor/exercises' 
+        : `/api/neck/doctor/exercises/${formattedId}`;
+      const method = isCreatingNew ? 'POST' : 'PUT';
+
+      const res = await apiFetch(url, {
+        method,
         body: JSON.stringify({
           ...selectedExercise,
-          videoUrl: selectedExercise.videoUrl || null,
+          id: formattedId,
+          videoUrl: selectedExercise.videoUrl ? selectedExercise.videoUrl.trim() : null,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setExerciseSaveMessage({
-          text: tr('Exercise updated successfully!', 'تم حفظ تعديلات التمرين والتكرارات بنجاح! ✓'),
+          text: isCreatingNew
+            ? tr('New exercise added successfully!', 'تمت إضافة التمرين الجديد بنجاح إلى النظام! ✓')
+            : tr('Exercise updated successfully!', 'تم حفظ تعديلات التمرين والتكرارات بنجاح! ✓'),
           ok: true
         });
+        setIsCreatingNew(false);
         await fetchExercises();
       } else {
         setExerciseSaveMessage({
@@ -662,53 +688,147 @@ export function AdminPortal() {
         {/* TAB 2: EXERCISE & REPETITIONS MANAGEMENT */}
         {activeTab === 'exercises' && (
           <div className="plush" style={{ background: 'var(--surface)', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <h3 style={{ fontSize: 22, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>
-                {tr('Exercise & Video Customization', 'إدارة وتعديل التمارين وتكراراتها')}
-              </h3>
-              <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginTop: 4, fontWeight: 700 }}>
-                {tr('Customize exercise titles, repetitions per set, sets count, hold duration, and video links.', 'يمكنكِ تعديل اسم التمرين، عدد التكرارات، المجموعات، مدة الثبات، وتفعيل أو إيقاف أي تمرين في الموقع.')}
-              </p>
-            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h3 style={{ fontSize: 22, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>
+                  {tr('Exercise & Video Customization', 'إدارة وتعديل التمارين والفيديوهات')}
+                </h3>
+                <p style={{ fontSize: 14, color: 'var(--ink-soft)', marginTop: 4, fontWeight: 700 }}>
+                  {tr('Customize exercise titles, repetitions per set, sets count, hold duration, and video links or add completely new exercises.', 'يمكنكِ تعديل اسم التمرين، روابط الفيديوهات (YouTube أو رابط مباشر)، عدد التكرارات والمجموعات، أو إضافة تمارين جديدة بالكامل للموقع.')}
+                </p>
+              </div>
 
-            {/* Exercise Selector */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ fontWeight: 900, fontSize: 14, color: 'var(--ink)' }}>
-                {tr('Select Exercise to Edit:', 'اختاري التمرين المراد تعديله:')}
-              </label>
-              <select 
-                value={selectedExercise.id} 
-                onChange={(e) => {
-                  const row = neckExercises.find(x => x.id === e.target.value);
-                  if (row) {
+              {!isCreatingNew ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreatingNew(true);
                     setSelectedExercise({
-                      ...row,
-                      videoUrl: row.videoUrl || '',
-                      planReps: row.planReps ?? null,
-                      planSets: row.planSets ?? null,
-                      planHoldSeconds: row.planHoldSeconds ?? null,
-                      planRestSeconds: row.planRestSeconds ?? null
+                      id: '',
+                      title: '',
+                      description: '',
+                      instructions: '',
+                      videoUrl: '',
+                      active: true,
+                      planReps: null,
+                      planSets: null,
+                      planHoldSeconds: null,
+                      planRestSeconds: null
                     });
                     setExerciseSaveMessage(null);
-                  }
-                }}
-                style={{
-                  maxWidth: 420,
-                  padding: '10px 14px',
-                  border: '2.5px solid var(--line)',
-                  borderRadius: 12,
-                  fontSize: 15,
-                  fontWeight: 900,
-                  background: 'var(--surface)',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                {neckExercises.map(x => (
-                  <option key={x.id} value={x.id}>{x.title} ({x.id})</option>
-                ))}
-              </select>
+                  }}
+                  className="tap btn-plush primary"
+                  style={{
+                    padding: '10px 18px',
+                    borderRadius: 12,
+                    fontSize: 14,
+                    fontWeight: 900,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={18} />
+                  <span>{tr('Add New Exercise', 'إضافة تمرين جديد +')}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreatingNew(false);
+                    if (neckExercises.length > 0) {
+                      setSelectedExercise({
+                        ...neckExercises[0],
+                        videoUrl: neckExercises[0].videoUrl || '',
+                        planReps: neckExercises[0].planReps ?? null,
+                        planSets: neckExercises[0].planSets ?? null,
+                        planHoldSeconds: neckExercises[0].planHoldSeconds ?? null,
+                        planRestSeconds: neckExercises[0].planRestSeconds ?? null
+                      });
+                    }
+                    setExerciseSaveMessage(null);
+                  }}
+                  className="tap"
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontWeight: 800,
+                    border: '2px solid var(--line)',
+                    background: 'var(--surface)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {tr('Cancel / Edit Existing', 'إلغاء / العودة للتمارين الحالية')}
+                </button>
+              )}
             </div>
+
+            {/* Exercise Selector or New ID Input */}
+            {!isCreatingNew ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ fontWeight: 900, fontSize: 14, color: 'var(--ink)' }}>
+                  {tr('Select Exercise to Edit:', 'اختاري التمرين المراد تعديله:')}
+                </label>
+                <select 
+                  value={selectedExercise.id} 
+                  onChange={(e) => {
+                    const row = neckExercises.find(x => x.id === e.target.value);
+                    if (row) {
+                      setSelectedExercise({
+                        ...row,
+                        videoUrl: row.videoUrl || '',
+                        planReps: row.planReps ?? null,
+                        planSets: row.planSets ?? null,
+                        planHoldSeconds: row.planHoldSeconds ?? null,
+                        planRestSeconds: row.planRestSeconds ?? null
+                      });
+                      setExerciseSaveMessage(null);
+                    }
+                  }}
+                  style={{
+                    maxWidth: 420,
+                    padding: '10px 14px',
+                    border: '2.5px solid var(--line)',
+                    borderRadius: 12,
+                    fontSize: 15,
+                    fontWeight: 900,
+                    background: 'var(--surface)',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {neckExercises.map(x => (
+                    <option key={x.id} value={x.id}>{x.title} ({x.id})</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, background: '#F0FDF4', padding: '16px 20px', borderRadius: 12, border: '2px dashed #10B981' }}>
+                <label style={{ fontWeight: 900, fontSize: 14, color: '#065F46' }}>
+                  {tr('Exercise ID (English code, e.g. neck-extension-2):', 'معرّف التمرين (كود إنجليزي مميز، مثلاً: neck-extension-2):')}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. neck-extension-2"
+                  value={selectedExercise.id || ''}
+                  onChange={(e) => setSelectedExercise({ ...selectedExercise, id: e.target.value })}
+                  style={{
+                    padding: '10px 14px',
+                    border: '2px solid var(--line)',
+                    borderRadius: 10,
+                    fontWeight: 800,
+                    fontSize: 14,
+                    background: 'var(--surface)',
+                    maxWidth: 420
+                  }}
+                />
+                <span style={{ fontSize: 12, color: '#047857' }}>
+                  {tr('This code is used in camera sessions and system tracking.', 'هذا الكود يميّز التمرين داخل النظام ومكتبة الجلسات.')}
+                </span>
+              </div>
+            )}
 
             {/* Form Fields */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
@@ -876,7 +996,13 @@ export function AdminPortal() {
                 }}
               >
                 <Save size={18} />
-                <span>{isSavingExercise ? tr('Saving...', 'جاري الحفظ...') : tr('Save Exercise Changes', 'حفظ تعديلات التمرين والتكرارات')}</span>
+                <span>
+                  {isSavingExercise 
+                    ? tr('Saving...', 'جاري الحفظ...') 
+                    : isCreatingNew 
+                    ? tr('Add Exercise to System', 'إضافة التمرين الجديد للنظام ➕') 
+                    : tr('Save Exercise Changes', 'حفظ تعديلات التمرين والتكرارات 💾')}
+                </span>
               </button>
 
               {exerciseSaveMessage && (
