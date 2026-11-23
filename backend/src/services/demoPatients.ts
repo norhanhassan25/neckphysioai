@@ -96,14 +96,14 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Strengthen cervical flexors',
     sessions: createNineSessions([68, 69, 70, 70, 71, 72, 72, 73, 74], 2)
   },
-  // 4. اسيل محمد عزيز: 9 sessions, 9 days, average 79% (Sum = 711)
+  // 4. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
   {
     name: 'اسيل محمد عزيز',
     email: 'aseelmohammed@gmail.com',
     age: 26,
     experience: 'Intermediate',
     goal: 'Improve neck mobility & proprioception',
-    sessions: createNineSessions([75, 76, 77, 78, 79, 80, 81, 82, 83], 3)
+    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 3)
   },
   // 5. ليلى ايمن: 9 sessions, 9 days, average 80% (Sum = 720)
   {
@@ -211,9 +211,14 @@ export async function seedDemoPatients() {
       );
     }
 
-    // Check existing sessions count - only seed if the patient has 0 sessions, so any new session they perform persists and increments!
+    // Check existing sessions count & average - reseed if 0 sessions or target average needs update
     const existingCount = await one<{ count: number }>("SELECT COUNT(*)::int AS count FROM sessions WHERE user_id = $1", [userId]);
-    if ((existingCount?.count ?? 0) === 0) {
+    const existingAvg = await one<{ avg: number }>("SELECT ROUND(AVG(average_score))::int AS avg FROM sessions WHERE user_id = $1", [userId]);
+    const targetAvg = Math.round(p.sessions.reduce((a, b) => a + b.score, 0) / p.sessions.length);
+    if ((existingCount?.count ?? 0) === 0 || (existingCount?.count === p.sessions.length && existingAvg?.avg !== targetAvg)) {
+      await run("DELETE FROM sessions WHERE user_id = $1", [userId]);
+      await run("DELETE FROM neck_tracking_sessions WHERE user_id = $1", [userId]);
+      await run("DELETE FROM neck_assessments WHERE user_id = $1", [userId]);
       // Insert initial NDI assessment
       const ndiAnswers = {
         ndi: [1, 2, 1, 2, 1, 1, 2, 1, 2, 1], // Mild neck disability
