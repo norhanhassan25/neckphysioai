@@ -10,7 +10,7 @@ type CategoryFilter = (typeof NECK_EXERCISE_CATEGORIES)[number];
 export function PoseLibraryScreen() {
   const {language} = useLanguage();
   const tr = (en: string, ar: string) => language === 'ar' ? ar : en;
-  const cats: Record<string,string> = {'All exercises':'كل التمارين','Deep cervical flexor training':'تمارين العضلات العميقة للرقبة','Cervical isometric exercises':'تمارين الرقبة الثابتة','Proprioceptive rehabilitation':'تأهيل الإحساس بوضع الرقبة','Tracking training':'تمارين تتبع حركة الرأس'};
+  const cats: Record<string,string> = {'All exercises':'كل التمارين','Deep cervical flexor training':'تمارين العضلات العميقة للرقبة','Cervical isometric exercises':'تمارين الرقبة الثابتة','Proprioceptive rehabilitation':'تأهيل الإحساس بوضع الرقبة','Tracking training':'تمارين تتبع حركة الرأس','Neutral Head Training':'تدريب وضع الرأس المحايد'};
   const titles: Record<string,string> = {'deep-flexor-1':'تمرين العضلات العميقة للرقبة – المستوى الأول','deep-flexor-2':'تمرين العضلات العميقة للرقبة – المستوى المتقدم','cervical-isometric':'تمارين الرقبة الثابتة','laser-proprioception':'تأهيل الرقبة بالليزر الافتراضي','tracking-1':'تتبع حركة الرأس – المستوى الأول','tracking-2':'تدريب وضع الرأس المحايد – المتقدم'};
   const descriptions: Record<string,string> = {'deep-flexor-1':'تمرين أساسي للتحكم في حركة الذقن والرقبة.','deep-flexor-2':'مرحلة متقدمة لتمرين العضلات العميقة للرقبة.','cervical-isometric':'تدريب ثبات الرأس أثناء مقاومة لطيفة باليد.','laser-proprioception':'تمرين توجيه الرأس نحو أهداف لتحسين الوعي بالوضعية.','tracking-1':'تدريب تتبع هدف بواسطة حركة الرأس.','tracking-2':'تدريب ثبات وضع الرأس المحايد.'};
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All exercises');

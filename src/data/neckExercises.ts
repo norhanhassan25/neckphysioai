@@ -9,7 +9,8 @@ export type NeckExerciseCategory =
   | 'Deep cervical flexor training'
   | 'Cervical isometric exercises'
   | 'Proprioceptive rehabilitation'
-  | 'Tracking training';
+  | 'Tracking training'
+  | 'Neutral Head Training';
 
 export interface NeckExerciseResource {
   id: string;
@@ -66,7 +67,7 @@ export const NECK_EXERCISES: NeckExerciseResource[] = [
   {
     id: 'tracking-2',
     title: 'Cervical Neutral Head Training',
-    category: 'Tracking training',
+    category: 'Neutral Head Training',
     description: 'Neutral head training progression resource for cervical rehabilitation.',
     videoUrl: 'https://youtu.be/8vZMcVPOUac?si=z89jisdiZJvVrGTL',
     progression: 'Progression video 2',
@@ -79,4 +80,5 @@ export const NECK_EXERCISE_CATEGORIES = [
   'Cervical isometric exercises',
   'Proprioceptive rehabilitation',
   'Tracking training',
+  'Neutral Head Training',
 ] as const;
