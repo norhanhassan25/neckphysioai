@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useUser } from '../utils/auth';
 import { useUserData } from '../game/store';
@@ -67,6 +67,42 @@ export function DoctorPortal() {
   const [patientHistory, setPatientHistory] = useState<SessionData[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedSession, setSelectedSession] = useState<SessionData | null>(null);
+
+  const dailyPatientHistory = useMemo(() => {
+    const groups: { [key: string]: SessionData[] } = {};
+    patientHistory.forEach((s) => {
+      const dayKey = new Date(s.date).toDateString();
+      if (!groups[dayKey]) groups[dayKey] = [];
+      groups[dayKey].push(s);
+    });
+
+    return Object.entries(groups).map(([dayKey, exercises]) => {
+      const avg = Math.round(exercises.reduce((sum, e) => sum + e.averageScore, 0) / exercises.length);
+      const totalDuration = exercises.reduce((sum, e) => sum + e.durationSeconds, 0);
+      const totalHold = exercises.reduce((sum, e) => sum + e.holdTimeSeconds, 0);
+      const latestDate = Math.max(...exercises.map(e => e.date));
+      let grade: 'A' | 'B' | 'C' | 'D' = 'D';
+      if (avg >= 80) grade = 'A';
+      else if (avg >= 70) grade = 'B';
+      else if (avg >= 60) grade = 'C';
+
+      return {
+        id: exercises[0].id,
+        date: latestDate,
+        dayKey,
+        exercises,
+        exerciseCount: exercises.length,
+        averageScore: avg,
+        durationSeconds: totalDuration,
+        holdTimeSeconds: totalHold,
+        grade,
+        primarySession: exercises[0],
+        displayName: exercises.length > 1
+          ? tr(`Full Daily Session (${exercises.length} exercises)`, `جلسة يومية متكاملة (${exercises.length} تمارين)`)
+          : exercises[0].poseName,
+      };
+    }).sort((a, b) => b.date - a.date);
+  }, [patientHistory, language]);
 
   const [aiReport, setAiReport] = useState('');
   const [generatingAi, setGeneratingAi] = useState(false);
@@ -904,8 +940,8 @@ export function DoctorPortal() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 800 }}>
                   {(() => {
-                    const sessionIdx = patientHistory.findIndex(s => s.id === selectedSession.id);
-                    const sessionDayNum = sessionIdx >= 0 ? patientHistory.length - sessionIdx : 1;
+                    const sessionIdx = dailyPatientHistory.findIndex(s => s.exercises.some(e => e.id === selectedSession.id));
+                    const sessionDayNum = sessionIdx >= 0 ? dailyPatientHistory.length - sessionIdx : 1;
                     const timingText = tr(`Day ${sessionDayNum}`, `اليوم ${sessionDayNum}`);
                     return <span style={{ color: 'var(--ink-soft)' }}>{tr('Day', 'اليوم')}: <b>{timingText}</b></span>;
                   })()}
@@ -939,22 +975,22 @@ export function DoctorPortal() {
                       </tr>
                     </thead>
                     <tbody>
-                      {patientHistory.map((s, idx) => {
-                        const sessionDayNum = patientHistory.length - idx;
+                      {dailyPatientHistory.map((s, idx) => {
+                        const sessionDayNum = dailyPatientHistory.length - idx;
                         const timingText = tr(`Day ${sessionDayNum}`, `اليوم ${sessionDayNum}`);
                         return (
                           <tr 
                             key={s.id} 
-                            onClick={() => setSelectedSession(s)}
+                            onClick={() => setSelectedSession(s.primarySession)}
                             style={{ 
                               borderBottom: '2px dashed var(--line)', 
                               fontWeight: 800, 
                               cursor: 'pointer',
-                              background: selectedSession?.id === s.id ? 'var(--cream)' : 'transparent'
+                              background: selectedSession?.id === s.primarySession.id ? 'var(--cream)' : 'transparent'
                             }}
                           >
                             <td style={{ padding: '10px 4px', fontWeight: 900 }}>{timingText}</td>
-                            <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>{s.poseName}</td>
+                            <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>{s.displayName}</td>
                             <td style={{ padding: '10px 4px' }}>{s.durationSeconds}s</td>
                             <td style={{ padding: '10px 4px' }}>{s.holdTimeSeconds}s</td>
                             <td style={{ padding: '10px 4px' }}>{s.averageScore}%</td>

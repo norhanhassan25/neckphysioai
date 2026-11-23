@@ -141,7 +141,7 @@ export async function canViewUser(auth: AuthContext, userId: string): Promise<bo
 
 export function listPatients(_doctorId?: string) {
   return many<UserRow & { session_count: number; avg_score: number | null }>(
-    `SELECT u.*, COUNT(s.id)::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
+    `SELECT u.*, COUNT(DISTINCT to_char(to_timestamp(s.date / 1000), 'YYYY-MM-DD'))::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
      FROM users u
      LEFT JOIN sessions s ON s.user_id = u.user_id
      WHERE u.role = 'patient'
@@ -155,7 +155,7 @@ export const setCarePlan = (patientId: string, plan: CarePlanItem[]) =>
 
 export const listAllUsers = () =>
   many<UserRow & { session_count: number; avg_score: number | null }>(`
-    SELECT u.*, COUNT(s.id)::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
+    SELECT u.*, COUNT(DISTINCT to_char(to_timestamp(s.date / 1000), 'YYYY-MM-DD'))::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
     FROM users u
     LEFT JOIN sessions s ON s.user_id = u.user_id
     GROUP BY u.user_id

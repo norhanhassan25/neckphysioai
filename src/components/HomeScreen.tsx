@@ -1,5 +1,5 @@
 import { store, useSessionHistory, useUserData, useActiveTab } from '../game/store';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useAuth } from '../utils/auth';
 import { SessionData } from '../game/types';
 import { POSES } from '../data/poses';
@@ -257,10 +257,47 @@ export function HomeScreen() {
   }, [userId]);
 
 
-  const count = history.length;
+  // Group individual exercise recordings into Daily Sessions
+  const dailySessions = useMemo(() => {
+    const groups: { [key: string]: SessionData[] } = {};
+    history.forEach((s) => {
+      const dayKey = new Date(s.date).toDateString();
+      if (!groups[dayKey]) groups[dayKey] = [];
+      groups[dayKey].push(s);
+    });
+
+    return Object.entries(groups).map(([dayKey, exercises]) => {
+      const avg = Math.round(exercises.reduce((sum, e) => sum + e.averageScore, 0) / exercises.length);
+      const totalDuration = exercises.reduce((sum, e) => sum + e.durationSeconds, 0);
+      const totalHold = exercises.reduce((sum, e) => sum + e.holdTimeSeconds, 0);
+      const latestDate = Math.max(...exercises.map(e => e.date));
+      let grade: 'A' | 'B' | 'C' | 'D' = 'D';
+      if (avg >= 80) grade = 'A';
+      else if (avg >= 70) grade = 'B';
+      else if (avg >= 60) grade = 'C';
+
+      return {
+        id: exercises[0].id,
+        date: latestDate,
+        dayKey,
+        exercises,
+        exerciseCount: exercises.length,
+        averageScore: avg,
+        durationSeconds: totalDuration,
+        holdTimeSeconds: totalHold,
+        grade,
+        primarySession: exercises[0],
+        title: exercises.length > 1 
+          ? (language === 'ar' ? `جلسة يومية متكاملة (${exercises.length} تمارين)` : `Daily Session (${exercises.length} exercises)`)
+          : exercises[0].poseName,
+      };
+    }).sort((a, b) => b.date - a.date);
+  }, [history, language]);
+
+  const count = dailySessions.length;
   
   const avgScore = count > 0 
-    ? Math.round(history.reduce((sum, s) => sum + s.averageScore, 0) / count) 
+    ? Math.round(dailySessions.reduce((sum, s) => sum + s.averageScore, 0) / count) 
     : 0;
 
 
@@ -408,7 +445,7 @@ export function HomeScreen() {
   const activeCoach = COACHES.find(c => c.id === selectedCoachId) || COACHES[0];
 
 
-  const trendData = [...history]
+  const trendData = [...dailySessions]
     .reverse()
     .map((s, idx) => ({
       date: language === 'ar' ? `اليوم ${idx + 1}` : `Day ${idx + 1}`,
@@ -598,10 +635,12 @@ export function HomeScreen() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {history.map((session) => (
+                    {dailySessions.map((session, sIdx) => {
+                      const dayNumber = dailySessions.length - sIdx;
+                      return (
                       <div
                         key={session.id}
-                        onClick={() => handleViewSession(session)}
+                        onClick={() => handleViewSession(session.primarySession)}
                         className="tap"
                         style={{
                           display: 'flex',
@@ -632,7 +671,9 @@ export function HomeScreen() {
                           </div>
 
                           <div>
-                            <h3 style={{ fontSize: 17, fontWeight: 800 }}>{session.poseName}</h3>
+                            <h3 style={{ fontSize: 17, fontWeight: 800 }}>
+                              {language === 'ar' ? `الجلسة ${dayNumber}` : `Session ${dayNumber}`}: {session.title}
+                            </h3>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>
                               <span>{relativeDate(session.date, language === 'ar')}</span>
                               <span>•</span>
@@ -657,7 +698,8 @@ export function HomeScreen() {
                           <ChevronRight size={20} color="var(--line)" />
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
               </div>
