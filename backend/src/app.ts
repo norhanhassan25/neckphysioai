@@ -36,9 +36,22 @@ export function createApp() {
   app.use(securityHeaders);
 
   // session uploads carry a frame log, everything else is small: keep the big
-  // limit to the one route that needs it
-  app.use('/api/sessions', express.json({ limit: '2mb' }));
-  app.use(express.json({ limit: '64kb' }));
+  // limit to the one route that needs it. In Vercel serverless functions, req.body is already parsed.
+  if (!process.env.VERCEL) {
+    app.use('/api/sessions', express.json({ limit: '2mb' }));
+    app.use(express.json({ limit: '64kb' }));
+  } else {
+    app.use((req, _res, next) => {
+      if (typeof req.body === 'string' && req.body.length > 0) {
+        try {
+          req.body = JSON.parse(req.body);
+        } catch {
+          // invalid json handled by router
+        }
+      }
+      next();
+    });
+  }
   app.use(cookieParser());
 
   app.get('/api/health', async (_req, res) => {
