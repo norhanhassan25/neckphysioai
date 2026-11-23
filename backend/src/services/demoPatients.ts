@@ -149,6 +149,24 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     experience: 'Intermediate',
     goal: 'Cervical mobility & posture rehabilitation',
     sessions: createNineSessions([72, 73, 74, 75, 76, 77, 78, 79, 80], 3)
+  },
+  // 11. Mazen yasser: 9 sessions, 9 days, average 65% (Sum = 585)
+  {
+    name: 'Mazen yasser',
+    email: 'maazen-yas24@gamil.con',
+    age: 25,
+    experience: 'Beginner',
+    goal: 'Cervical proprioception & mobility rehabilitation',
+    sessions: createNineSessions([61, 62, 63, 64, 65, 66, 67, 68, 69], 4)
+  },
+  // 12. Ziad salah: 9 sessions, 9 days, average 68% (Sum = 612)
+  {
+    name: 'Ziad salah',
+    email: 'ziad.salah777@gmail.com',
+    age: 26,
+    experience: 'Beginner',
+    goal: 'Cervical posture & tracking alignment',
+    sessions: createNineSessions([64, 65, 66, 67, 68, 69, 70, 71, 72], 5)
   }
 ];
 
@@ -228,7 +246,10 @@ export async function seedDemoPatients() {
       'ali@example.com',
       'saraayman@gmail.com',
       'mariamelsayed@gmail.com',
-      'mohamed97@gmail.com'
+      'mohamed97@gmail.com',
+      'maazen-yas24@gamil.con',
+      'maazen-yas24@gmail.com',
+      'ziad.salah777@gmail.com'
     )
   `);
 

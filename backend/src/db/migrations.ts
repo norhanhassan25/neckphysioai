@@ -271,6 +271,16 @@ export const migrations: Migration[] = [
       DELETE FROM deleted_users WHERE LOWER(email) = 'mohamed97@gmail.com';
     `,
   },
+
+  {
+    id: 12,
+    name: 'whitelist_mazen_yasser_and_ziad_salah',
+    sql: `
+      -- Ensure Mazen yasser & Ziad salah are never blocked from being seeded
+      CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now());
+      DELETE FROM deleted_users WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com', 'ziad.salah777@gmail.com');
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
