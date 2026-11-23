@@ -26,5 +26,5 @@ export function errorHandler(err: any, req: Request, res: Response, _next: NextF
     return res.status(503).json({ error: DB_UNAVAILABLE, requestId: req.id });
   }
   console.error(`[api] ${req.method} ${req.path} failed (id=${req.id}):`, err);
-  res.status(500).json({ error: 'Something went wrong', requestId: req.id });
+  res.status(500).json({ error: 'Something went wrong', message: err?.message || String(err), stack: err?.stack, requestId: req.id });
 }

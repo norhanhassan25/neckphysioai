@@ -1,5 +1,8 @@
 import { run, one } from '../db/pool.js';
 import crypto from 'crypto';
+import { hashPassword } from './passwords.js';
+
+export const DEMO_PATIENT_PASSWORD = 'Project@101112';
 
 interface PatientSeedConfig {
   name: string;
@@ -188,19 +191,20 @@ export async function seedDemoPatients() {
     let user = await one<{ user_id: string }>("SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)", [p.email]);
     let userId = user?.user_id;
 
+    const patientPassHash = hashPassword(DEMO_PATIENT_PASSWORD);
     if (!userId) {
       userId = `usr_demo_${crypto.randomBytes(6).toString('hex')}`;
       await run(
-        `INSERT INTO users (user_id, name, email, age, experience, goal, role, doctor_id, approved, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, 'patient', $7, TRUE, $8)
+        `INSERT INTO users (user_id, name, email, password_hash, age, experience, goal, role, doctor_id, approved, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'patient', $8, TRUE, $9)
          ON CONFLICT (user_id) DO NOTHING`,
-        [userId, p.name, p.email, p.age, p.experience, p.goal, doctorId, new Date(now - 12 * ONE_DAY_MS)]
+        [userId, p.name, p.email, patientPassHash, p.age, p.experience, p.goal, doctorId, new Date(now - 12 * ONE_DAY_MS)]
       );
     } else {
       await run(
-        `UPDATE users SET name = $2, age = $3, experience = $4, goal = $5, doctor_id = COALESCE(doctor_id, $6)
+        `UPDATE users SET name = $2, age = $3, experience = $4, goal = $5, doctor_id = COALESCE(doctor_id, $6), password_hash = $7
          WHERE user_id = $1`,
-        [userId, p.name, p.age, p.experience, p.goal, doctorId]
+        [userId, p.name, p.age, p.experience, p.goal, doctorId, patientPassHash]
       );
     }
 
