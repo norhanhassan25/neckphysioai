@@ -1,7 +1,7 @@
 import type { SessionRow, UserRow } from './types.js';
 
 // the api speaks camelCase, the database snake_case. password hashes never leave here
-export function toUser(row: UserRow) {
+export function toUser(row: UserRow & { session_count?: number; avg_score?: number | null }) {
   return {
     id: row.user_id,
     name: row.name,
@@ -13,6 +13,8 @@ export function toUser(row: UserRow) {
     doctorId: row.doctor_id,
     carePlan: row.care_plan ?? [],
     approved: row.approved,
+    sessionCount: row.session_count ?? 0,
+    avgScore: row.avg_score ?? null,
   };
 }
 

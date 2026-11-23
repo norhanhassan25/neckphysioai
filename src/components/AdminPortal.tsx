@@ -17,7 +17,11 @@ import {
   Users as UsersIcon,
   Save,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  X,
+  Award,
+  Flame,
+  Heart
 } from 'lucide-react';
 
 interface SystemStats {
@@ -40,6 +44,8 @@ interface UserRow {
   role: 'patient' | 'doctor' | 'admin';
   doctorId?: string | null;
   approved?: boolean;
+  sessionCount?: number;
+  avgScore?: number | null;
 }
 
 export function AdminPortal() {
@@ -61,6 +67,7 @@ export function AdminPortal() {
   });
   const [users, setUsers] = useState<UserRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUserModal, setSelectedUserModal] = useState<UserRow | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -439,13 +446,14 @@ export function AdminPortal() {
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, textAlign: language === 'ar' ? 'right' : 'left', minWidth: 650 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, textAlign: language === 'ar' ? 'right' : 'left', minWidth: 700 }}>
                   <thead>
                     <tr style={{ borderBottom: '2.5px solid var(--line)', color: 'var(--ink-soft)', fontWeight: 900 }}>
                       <th style={{ padding: '12px 8px' }}>{tr('User Profile', 'بيانات المستخدم')}</th>
+                      <th style={{ padding: '12px 8px' }}>{tr('Age & Sessions', 'السن والجلسات')}</th>
                       <th style={{ padding: '12px 8px' }}>{tr('Role', 'الصلاحية')}</th>
                       <th style={{ padding: '12px 8px' }}>{tr('Assigned Doctor', 'الطبيب المعالج')}</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'center' }}>{tr('Delete / Actions', 'مسح الحساب / إجراءات')}</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center' }}>{tr('Actions', 'إجراءات')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -453,114 +461,169 @@ export function AdminPortal() {
                       <tr 
                         key={u.id}
                         style={{ 
-                          borderBottom: '2px dashed var(--line)', 
-                          fontWeight: 800, 
-                          opacity: updatingId === u.id ? 0.5 : 1,
-                          background: u.id === userId ? '#F6FFF8' : 'transparent'
-                        }}
-                      >
-                        <td style={{ padding: '14px 8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: '50%',
-                              border: '2.5px solid var(--line)',
-                              background: u.role === 'admin' ? 'var(--peach)' : u.role === 'doctor' ? 'var(--mint)' : 'var(--surface)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0
+                        borderBottom: '2px dashed var(--line)', 
+                        fontWeight: 800, 
+                        opacity: updatingId === u.id ? 0.5 : 1,
+                        background: u.id === userId ? '#F6FFF8' : 'transparent'
+                      }}
+                    >
+                      <td style={{ padding: '14px 8px' }}>
+                        <div 
+                          onClick={() => setSelectedUserModal(u)}
+                          className="tap"
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+                          title={tr('Click to view full patient dossier', 'اضغطي لعرض الملف الكامل للمريض')}
+                        >
+                          <div style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            border: '2.5px solid var(--line)',
+                            background: u.role === 'admin' ? 'var(--peach)' : u.role === 'doctor' ? 'var(--mint)' : 'var(--surface)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            {u.role === 'admin' ? <Shield size={16} /> : u.role === 'doctor' ? <Stethoscope size={16} /> : <User size={16} />}
+                          </div>
+                          <div>
+                            <div style={{ color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                              {u.name}
+                              {u.id === userId && (
+                                <span style={{ fontSize: 9, background: 'var(--mint)', border: '2px solid var(--line)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', fontWeight: 900, textDecoration: 'none' }}>
+                                  {tr('You (Admin)', 'أنتِ (الأدمن)')}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>{u.email}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td style={{ padding: '14px 8px' }}>
+                        {u.role === 'patient' ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, color: 'var(--ink)' }}>
+                              {u.age ? `${u.age} ${tr('yrs', 'سنة')}` : tr('Age unset', 'السن غير محدد')}
+                            </span>
+                            <span style={{ 
+                              fontSize: 11, 
+                              fontWeight: 900, 
+                              color: 'var(--ink)', 
+                              background: (u.sessionCount ?? 0) > 0 ? 'var(--mint)' : 'var(--cream)',
+                              border: '1.5px solid var(--line)',
+                              borderRadius: 6,
+                              padding: '1px 6px',
+                              display: 'inline-flex',
+                              width: 'fit-content'
                             }}>
-                              {u.role === 'admin' ? <Shield size={16} /> : u.role === 'doctor' ? <Stethoscope size={16} /> : <User size={16} />}
-                            </div>
-                            <div>
-                              <div style={{ color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                {u.name}
-                                {u.id === userId && (
-                                  <span style={{ fontSize: 9, background: 'var(--mint)', border: '2px solid var(--line)', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', fontWeight: 900 }}>
-                                    {tr('You (Admin)', 'أنتِ (الأدمن)')}
-                                  </span>
-                                )}
-                              </div>
-                              <div style={{ fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>{u.email}</div>
-                            </div>
+                              {u.sessionCount ?? 0} {tr('Sessions', 'جلسات')} {u.avgScore ? `(${u.avgScore}%)` : ''}
+                            </span>
                           </div>
-                        </td>
+                        ) : (
+                          <span style={{ fontSize: 12, color: 'var(--ink-soft)', fontStyle: 'italic' }}>—</span>
+                        )}
+                      </td>
 
-                        <td style={{ padding: '14px 8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <select
-                              value={u.role}
-                              disabled={updatingId === u.id || u.id === userId}
-                              onChange={(e) => handleChangeRole(u.id, e.target.value as any)}
-                              style={{
-                                padding: '6px 10px',
-                                border: '2px solid var(--line)',
-                                borderRadius: 'var(--r-sm)',
-                                background: 'var(--surface)',
-                                fontFamily: 'inherit',
-                                fontWeight: 800,
-                                fontSize: 12,
-                                cursor: 'pointer',
-                                outline: 'none'
-                              }}
-                            >
-                              <option value="patient">{tr('Patient', 'مريض')}</option>
-                              <option value="doctor">{tr('Doctor', 'طبيب')}</option>
-                              <option value="admin">{tr('Admin', 'مسؤول (Admin)')}</option>
-                            </select>
-                            {u.role === 'doctor' && u.approved === false && (
-                              <button
-                                onClick={() => handleApproveDoctor(u.id)}
-                                disabled={updatingId === u.id}
-                                className="tap"
-                                style={{
-                                  padding: '5px 8px',
-                                  border: '2px solid var(--line)',
-                                  borderRadius: 'var(--r-sm)',
-                                  background: 'var(--butter)',
-                                  fontWeight: 900,
-                                  fontSize: 11,
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                {tr('Approve', 'اعتماد')}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-
-                        <td style={{ padding: '14px 8px' }}>
-                          {u.role === 'patient' ? (
-                            <select
-                              value={u.doctorId || ''}
+                      <td style={{ padding: '14px 8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <select
+                            value={u.role}
+                            disabled={updatingId === u.id || u.id === userId}
+                            onChange={(e) => handleChangeRole(u.id, e.target.value as any)}
+                            style={{
+                              padding: '6px 10px',
+                              border: '2px solid var(--line)',
+                              borderRadius: 'var(--r-sm)',
+                              background: 'var(--surface)',
+                              fontFamily: 'inherit',
+                              fontWeight: 800,
+                              fontSize: 12,
+                              cursor: 'pointer',
+                              outline: 'none'
+                            }}
+                          >
+                            <option value="patient">{tr('Patient', 'مريض')}</option>
+                            <option value="doctor">{tr('Doctor', 'طبيب')}</option>
+                            <option value="admin">{tr('Admin', 'مسؤول (Admin)')}</option>
+                          </select>
+                          {u.role === 'doctor' && u.approved === false && (
+                            <button
+                              onClick={() => handleApproveDoctor(u.id)}
                               disabled={updatingId === u.id}
-                              onChange={(e) => handleAssignDoctor(u.id, e.target.value)}
+                              className="tap"
                               style={{
-                                padding: '6px 10px',
+                                padding: '5px 8px',
                                 border: '2px solid var(--line)',
                                 borderRadius: 'var(--r-sm)',
-                                background: 'var(--surface)',
-                                fontFamily: 'inherit',
-                                fontWeight: 800,
-                                fontSize: 12,
-                                cursor: 'pointer',
-                                outline: 'none',
-                                maxWidth: 160
+                                background: 'var(--butter)',
+                                fontWeight: 900,
+                                fontSize: 11,
+                                cursor: 'pointer'
                               }}
                             >
-                              <option value="">{tr('No Doctor Assigned', 'بدون طبيب محدد')}</option>
-                              {users.filter(usr => usr.role === 'doctor' && usr.approved !== false).map(doc => (
-                                <option key={doc.id} value={doc.id}>د. {doc.name}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <span style={{ fontSize: 12, color: 'var(--ink-soft)', fontStyle: 'italic' }}>{tr('Staff', 'طاقم عمل')}</span>
+                              {tr('Approve', 'اعتماد')}
+                            </button>
                           )}
-                        </td>
+                        </div>
+                      </td>
 
-                        <td style={{ padding: '14px 8px', textAlign: 'center' }}>
+                      <td style={{ padding: '14px 8px' }}>
+                        {u.role === 'patient' ? (
+                          <select
+                            value={u.doctorId || ''}
+                            disabled={updatingId === u.id}
+                            onChange={(e) => handleAssignDoctor(u.id, e.target.value)}
+                            style={{
+                              padding: '6px 10px',
+                              border: '2px solid var(--line)',
+                              borderRadius: 'var(--r-sm)',
+                              background: 'var(--surface)',
+                              fontFamily: 'inherit',
+                              fontWeight: 800,
+                              fontSize: 12,
+                              cursor: 'pointer',
+                              outline: 'none',
+                              maxWidth: 160
+                            }}
+                          >
+                            <option value="">{tr('No Doctor Assigned', 'بدون طبيب محدد')}</option>
+                            {users.filter(usr => usr.role === 'doctor' && usr.approved !== false).map(doc => (
+                              <option key={doc.id} value={doc.id}>د. {doc.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ fontSize: 12, color: 'var(--ink-soft)', fontStyle: 'italic' }}>{tr('Staff', 'طاقم عمل')}</span>
+                        )}
+                      </td>
+
+                      <td style={{ padding: '14px 8px', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedUserModal(u)}
+                            className="tap"
+                            title={tr('View user dossier', 'عرض الملف الشخصي')}
+                            style={{
+                              border: '2px solid var(--line)',
+                              background: 'var(--surface)',
+                              color: 'var(--ink)',
+                              padding: '8px 10px',
+                              borderRadius: 10,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontWeight: 900,
+                              fontSize: 12,
+                              boxShadow: '2px 2px 0 var(--line)',
+                            }}
+                          >
+                            <Search size={14} />
+                            <span>{tr('Details', 'الملف')}</span>
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => handleDeleteUser(u.id, u.name)}
@@ -570,26 +633,27 @@ export function AdminPortal() {
                               border: '2px solid var(--line)',
                               background: u.id === userId ? '#F1F5F9' : '#FFEAE6',
                               color: u.id === userId ? 'var(--ink-soft)' : '#FF4D4D',
-                              padding: '8px 12px',
+                              padding: '8px 10px',
                               borderRadius: 10,
                               cursor: u.id === userId ? 'not-allowed' : 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 6,
+                              gap: 4,
                               fontWeight: 900,
                               fontSize: 12,
                               boxShadow: u.id === userId ? 'none' : '2px 2px 0 var(--line)',
                             }}
                             className={u.id === userId ? '' : 'tap'}
                           >
-                            <Trash2 size={15} />
-                            <span>{tr('Delete', 'مسح الحساب')}</span>
+                            <Trash2 size={14} />
+                            <span>{tr('Delete', 'مسح')}</span>
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               </div>
             )}
           </div>
@@ -828,6 +892,136 @@ export function AdminPortal() {
                   <span>{exerciseSaveMessage.text}</span>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* PATIENT DETAILS MODAL (Admin Dossier) */}
+        {selectedUserModal && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.5)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 20
+            }}
+            onClick={() => setSelectedUserModal(null)}
+          >
+            <div 
+              style={{
+                background: 'var(--surface)',
+                border: '3px solid var(--line)',
+                borderRadius: 'var(--r-md)',
+                padding: '28px 30px',
+                maxWidth: 480,
+                width: '100%',
+                boxShadow: 'var(--plush)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 18,
+                textAlign: language === 'ar' ? 'right' : 'left'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2.5px solid var(--line)', paddingBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '50%',
+                    border: '2.5px solid var(--line)',
+                    background: selectedUserModal.role === 'admin' ? 'var(--peach)' : selectedUserModal.role === 'doctor' ? 'var(--mint)' : 'var(--butter)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {selectedUserModal.role === 'admin' ? <Shield size={20} /> : selectedUserModal.role === 'doctor' ? <Stethoscope size={20} /> : <User size={20} />}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 18, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>{selectedUserModal.name}</h3>
+                    <span style={{ fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>{selectedUserModal.email}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedUserModal(null)}
+                  className="tap"
+                  style={{
+                    background: 'var(--cream)',
+                    border: '2px solid var(--line)',
+                    borderRadius: '50%',
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ background: 'var(--cream)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Age', 'السن')}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4 }}>
+                    {selectedUserModal.age ? `${selectedUserModal.age} ${tr('Years', 'سنة')}` : tr('Not specified', 'غير محدد')}
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--cream)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Experience', 'المستوى')}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4 }}>
+                    {selectedUserModal.experience || tr('Beginner', 'مبتدئ')}
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--cream)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Completed Sessions', 'الجلسات المنفذة')}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Flame size={16} style={{ color: 'var(--peach-deep)' }} />
+                    <span>{selectedUserModal.sessionCount ?? 0} {tr('Sessions', 'جلسات')}</span>
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--cream)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Avg. Score', 'متوسط التقييم')}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Award size={16} style={{ color: 'var(--mint-deep)' }} />
+                    <span>{selectedUserModal.avgScore ? `${selectedUserModal.avgScore}%` : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {selectedUserModal.goal && (
+                <div style={{ background: 'var(--paper)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase', marginBottom: 4 }}>
+                    {tr('Rehabilitation Goal', 'الهدف العلاجي والتأهيلي')}
+                  </div>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.5 }}>
+                    {selectedUserModal.goal}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedUserModal(null)}
+                  className="btn-plush primary tap"
+                  style={{ padding: '8px 20px', fontSize: 13 }}
+                >
+                  {tr('Close', 'إغلاق')}
+                </button>
+              </div>
             </div>
           </div>
         )}

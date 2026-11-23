@@ -149,7 +149,14 @@ export function listPatients(_doctorId?: string) {
 export const setCarePlan = (patientId: string, plan: CarePlanItem[]) =>
   run('UPDATE users SET care_plan = $2 WHERE user_id = $1', [patientId, JSON.stringify(plan)]);
 
-export const listAllUsers = () => many<UserRow>('SELECT * FROM users ORDER BY role DESC, name');
+export const listAllUsers = () =>
+  many<UserRow & { session_count: number; avg_score: number | null }>(`
+    SELECT u.*, COUNT(s.id)::int AS session_count, ROUND(AVG(s.average_score))::int AS avg_score
+    FROM users u
+    LEFT JOIN sessions s ON s.user_id = u.user_id
+    GROUP BY u.user_id
+    ORDER BY u.role DESC, u.name
+  `);
 
 // an admin picking the role counts as approving it
 export const setRole = (id: string, role: Role) =>
