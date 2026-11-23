@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useAuth, signInWithEmailPassword, signUpWithEmailPassword, signInWithGoogle } from './utils/auth';
 import { apiFetch } from './utils/api';
 import { store, useScreen, useUserData, profileFromApi, screenForProfile } from './game/store';
-import { Wordmark, ThemeSwitch } from './components/primitives';
+import { Wordmark, ThemeSwitch, LanguageSwitch } from './components/primitives';
 import { LandingScreen } from './components/LandingScreen';
 import { useLanguage } from './i18n/LanguageContext';
 
@@ -215,7 +215,8 @@ export default function App() {
     if (authView === 'role_select') {
       return (
         <div className="screen dots-bg" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 24, gap: 28, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 20, right: 24 }}>
+          <div style={{ position: 'absolute', top: 20, right: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <LanguageSwitch />
             <ThemeSwitch />
           </div>
           <button
@@ -326,7 +327,8 @@ export default function App() {
 
     return (
       <div className="screen dots-bg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 24, flexDirection: 'column', gap: 16, position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 20, right: 24 }}>
+        <div style={{ position: 'absolute', top: 20, right: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <LanguageSwitch />
           <ThemeSwitch />
         </div>
         <button
