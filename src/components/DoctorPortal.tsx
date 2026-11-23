@@ -5,6 +5,7 @@ import { useUserData } from '../game/store';
 import { CarePlanItem, SessionData, UserData } from '../game/types';
 import { TopBar } from './primitives';
 import { POSES } from '../data/poses';
+import { NECK_EXERCISES } from '../data/neckExercises';
 import { 
   Users, 
   TrendingUp, 
@@ -74,8 +75,11 @@ export function DoctorPortal() {
   const [activeFilterTab, setActiveFilterTab] = useState<'my' | 'all'>('my');
 
   const [prescribingPose, setPrescribingPose] = useState<string>('');
-  const [prescribingHold, setPrescribingHold] = useState<number>(15);
+  const [prescribingHold, setPrescribingHold] = useState<number | ''>(30);
   const [prescribingFreq, setPrescribingFreq] = useState<string>('Daily');
+  const [prescribingReps, setPrescribingReps] = useState<number | ''>('');
+  const [prescribingSets, setPrescribingSets] = useState<number | ''>('');
+  const [prescribingRest, setPrescribingRest] = useState<number | ''>('');
   const [isUpdatingCarePlan, setIsUpdatingCarePlan] = useState(false);
 
   const fetchPatients = async () => {
@@ -567,7 +571,9 @@ export function DoctorPortal() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {currentCarePlan.map((planItem: any, index: number) => {
-                        const poseConfig = POSES.find(p => p.id === planItem.poseId);
+                        const matchedNeck = NECK_EXERCISES.find(e => e.id === planItem.poseId);
+                        const matchedPose = POSES.find(p => p.id === planItem.poseId);
+                        const displayName = planItem.poseName || matchedNeck?.title || matchedPose?.name || planItem.poseId;
                         return (
                           <div 
                             key={index}
@@ -575,18 +581,35 @@ export function DoctorPortal() {
                               display: 'flex', 
                               alignItems: 'center', 
                               justifyContent: 'space-between', 
-                              padding: '10px 14px', 
+                              padding: '12px 14px', 
                               border: '2.5px solid var(--line)', 
                               borderRadius: 8, 
-                              background: 'var(--cream)' 
+                              background: 'var(--cream)',
+                              gap: 12
                             }}
                           >
                             <div>
                               <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--ink)' }}>
-                                {poseConfig?.name || planItem.poseId}
+                                {displayName}
                               </div>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-soft)', marginTop: 2 }}>
-                                Target Hold: <span style={{ color: 'var(--peach-deep)' }}>{planItem.targetHold}s</span> • Frequency: {planItem.frequency}
+                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-soft)', marginTop: 3, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                {planItem.sets ? (
+                                  <span><b>{planItem.sets}</b> {tr('Sets', 'مجموعات')}</span>
+                                ) : null}
+                                <span>
+                                  {planItem.reps ? (
+                                    <><b>{planItem.reps}</b> {tr('Reps', 'تكرار')}</>
+                                  ) : (
+                                    <span style={{ color: 'var(--teal-deep)', fontWeight: 800 }}>{tr('Free session (no forced reps)', 'جلسة حرة بدون عدد إجباري')}</span>
+                                  )}
+                                </span>
+                                {planItem.targetHold ? (
+                                  <span>• {tr('Hold', 'ثبات')}: <b>{planItem.targetHold}s</b></span>
+                                ) : null}
+                                {planItem.restSeconds ? (
+                                  <span>• {tr('Rest', 'راحة')}: <b>{planItem.restSeconds}s</b></span>
+                                ) : null}
+                                <span>• {planItem.frequency || 'Daily'}</span>
                               </div>
                             </div>
                             <button
@@ -601,9 +624,9 @@ export function DoctorPortal() {
                                 color: 'var(--rose-deep)',
                                 cursor: 'pointer',
                                 display: 'flex',
-                                padding: 4
+                                padding: 6
                               }}
-                              title="Remove prescription"
+                              title={tr('Remove prescription', 'إزالة التمرين')}
                             >
                               <Trash2 size={16} />
                             </button>
@@ -616,7 +639,7 @@ export function DoctorPortal() {
                   <div 
                     style={{ 
                       marginTop: 8,
-                      padding: '14px 16px',
+                      padding: '16px 18px',
                       border: '2.5px dashed var(--line)',
                       borderRadius: 12,
                       background: 'var(--paper)',
@@ -625,63 +648,156 @@ export function DoctorPortal() {
                       gap: 12
                     }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--ink)' }}>Prescribe Pose</div>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--ink)' }}>
+                      {tr('Prescribe Pose & Exercise Dosage', 'تحديد التمرين والجرعة التدريبية للمريض')}
+                    </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1.8fr', gap: 10 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--ink-soft)' }}>Select Pose</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+                      {/* Select Pose / Exercise */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Select Pose / Exercise', 'اختيار التمرين أو الوضعية (Select Pose)')} *
+                        </label>
                         <select
                           value={prescribingPose}
                           onChange={(e) => setPrescribingPose(e.target.value)}
                           style={{
-                            padding: '6px 8px',
+                            padding: '8px 10px',
                             border: '2.5px solid var(--line)',
-                            borderRadius: 6,
+                            borderRadius: 8,
                             background: 'var(--surface)',
-                            fontSize: 12,
+                            fontSize: 13,
                             fontWeight: 800,
                             fontFamily: 'inherit',
                             outline: 'none'
                           }}
                         >
-                          <option value="">-- Select Pose --</option>
-                          {POSES.map(p => (
-                            <option key={p.id} value={p.id}>{p.name.split(' (')[0]}</option>
-                          ))}
+                          <option value="">{tr('-- Select Pose / Exercise --', '-- اختاري التمرين أو الوضعية --')}</option>
+                          <optgroup label={tr('Neck Rehabilitation Exercises', 'تمارين تأهيل الرقبة')}>
+                            {NECK_EXERCISES.map(e => (
+                              <option key={e.id} value={e.id}>{e.title} {e.isOptional ? tr('(Optional)', '(اختياري)') : ''}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label={tr('Pose Library', 'وضعيات الكاميرا العامة')}>
+                            {POSES.map(p => (
+                              <option key={p.id} value={p.id}>{p.name.split(' (')[0]}</option>
+                            ))}
+                          </optgroup>
                         </select>
                       </div>
 
+                      {/* Reps per Set (فارغ = جلسة حرة بدون عدد إجباري) */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--ink-soft)' }}>Target Hold</label>
-                        <select
-                          value={prescribingHold}
-                          onChange={(e) => setPrescribingHold(parseInt(e.target.value))}
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Reps per Set', 'التكرارات في المجموعة')}
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="100"
+                          placeholder={tr('Empty = Free session', 'فارغ = جلسة حرة')}
+                          value={prescribingReps}
+                          onChange={(e) => setPrescribingReps(e.target.value === '' ? '' : parseInt(e.target.value))}
                           style={{
-                            padding: '6px 8px',
+                            padding: '8px 10px',
                             border: '2.5px solid var(--line)',
-                            borderRadius: 6,
+                            borderRadius: 8,
                             background: 'var(--surface)',
                             fontSize: 12,
                             fontWeight: 800,
                             fontFamily: 'inherit',
                             outline: 'none'
                           }}
-                        >
-                          {[5, 10, 15, 20, 30, 45, 60].map(s => (
-                            <option key={s} value={s}>{s}s</option>
-                          ))}
-                        </select>
+                        />
                       </div>
 
+                      {/* Number of Sets */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--ink-soft)' }}>Frequency</label>
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Number of Sets', 'عدد المجموعات')}
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="50"
+                          placeholder={tr('Empty = Free', 'فارغ = حر')}
+                          value={prescribingSets}
+                          onChange={(e) => setPrescribingSets(e.target.value === '' ? '' : parseInt(e.target.value))}
+                          style={{
+                            padding: '8px 10px',
+                            border: '2.5px solid var(--line)',
+                            borderRadius: 8,
+                            background: 'var(--surface)',
+                            fontSize: 12,
+                            fontWeight: 800,
+                            fontFamily: 'inherit',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      {/* Target Hold Seconds */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Hold Time (seconds)', 'مدة الثبات (ثواني)')}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="600"
+                          placeholder={tr('Seconds (e.g. 30)', 'ثواني (افتراضي 30)')}
+                          value={prescribingHold}
+                          onChange={(e) => setPrescribingHold(e.target.value === '' ? '' : parseInt(e.target.value))}
+                          style={{
+                            padding: '8px 10px',
+                            border: '2.5px solid var(--line)',
+                            borderRadius: 8,
+                            background: 'var(--surface)',
+                            fontSize: 12,
+                            fontWeight: 800,
+                            fontFamily: 'inherit',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      {/* Rest Time Seconds */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Rest Time (seconds)', 'مدة الراحة (ثواني)')}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="600"
+                          placeholder={tr('Seconds (e.g. 15)', 'ثواني (مثال 15)')}
+                          value={prescribingRest}
+                          onChange={(e) => setPrescribingRest(e.target.value === '' ? '' : parseInt(e.target.value))}
+                          style={{
+                            padding: '8px 10px',
+                            border: '2.5px solid var(--line)',
+                            borderRadius: 8,
+                            background: 'var(--surface)',
+                            fontSize: 12,
+                            fontWeight: 800,
+                            fontFamily: 'inherit',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      {/* Frequency */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)' }}>
+                          {tr('Frequency', 'التكرار')}
+                        </label>
                         <select
                           value={prescribingFreq}
                           onChange={(e) => setPrescribingFreq(e.target.value)}
                           style={{
-                            padding: '6px 8px',
+                            padding: '8px 10px',
                             border: '2.5px solid var(--line)',
-                            borderRadius: 6,
+                            borderRadius: 8,
                             background: 'var(--surface)',
                             fontSize: 12,
                             fontWeight: 800,
@@ -689,9 +805,11 @@ export function DoctorPortal() {
                             outline: 'none'
                           }}
                         >
-                          {['Daily', '3x a week', '2x a week', 'Weekly', 'Every other day'].map(f => (
-                            <option key={f} value={f}>{f}</option>
-                          ))}
+                          <option value="Daily">{tr('Daily', 'يومياً')}</option>
+                          <option value="Every other day">{tr('Every other day', 'يوم بعد يوم')}</option>
+                          <option value="3x a week">{tr('3x a week', '3 مرات أسبوعياً')}</option>
+                          <option value="2x a week">{tr('2x a week', 'مرتان أسبوعياً')}</option>
+                          <option value="Weekly">{tr('Weekly', 'أسبوعياً')}</option>
                         </select>
                       </div>
                     </div>
@@ -701,29 +819,46 @@ export function DoctorPortal() {
                       onClick={() => {
                         if (!prescribingPose) return;
                         if (currentCarePlan.some((item: any) => item.poseId === prescribingPose)) {
-                          alert('This pose is already in the care plan!');
+                          alert(tr('This pose is already in the care plan!', 'هذا التمرين مضاف بالفعل في الخطة العلاجية!'));
                           return;
                         }
+                        const matchedNeck = NECK_EXERCISES.find(e => e.id === prescribingPose);
+                        const matchedPose = POSES.find(p => p.id === prescribingPose);
+                        const resolvedName = matchedNeck?.title || matchedPose?.name?.split(' (')[0] || prescribingPose;
+
                         const newPlan = [
                           ...currentCarePlan,
-                          { poseId: prescribingPose, targetHold: prescribingHold, frequency: prescribingFreq }
+                          {
+                            poseId: prescribingPose,
+                            poseName: resolvedName,
+                            targetHold: prescribingHold !== '' ? Number(prescribingHold) : null,
+                            frequency: prescribingFreq || 'Daily',
+                            reps: prescribingReps !== '' ? Number(prescribingReps) : null,
+                            sets: prescribingSets !== '' ? Number(prescribingSets) : null,
+                            restSeconds: prescribingRest !== '' ? Number(prescribingRest) : null,
+                          }
                         ];
                         handleSaveCarePlan(newPlan);
                         setPrescribingPose('');
+                        setPrescribingReps('');
+                        setPrescribingSets('');
+                        setPrescribingRest('');
+                        setPrescribingHold(30);
                       }}
                       className="tap btn-plush primary"
                       style={{
-                        padding: '8px 12px',
-                        fontSize: 12,
+                        padding: '10px 14px',
+                        fontSize: 13,
+                        fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 6,
-                        margin: '4px 0 0',
+                        gap: 8,
+                        marginTop: 4,
                         boxShadow: '2px 2px 0 var(--line)'
                       }}
                     >
-                      <Plus size={14} /> Add Prescription
+                      <Plus size={16} /> {tr('Add Prescription to Patient Plan', 'إضافة التمرين لخطة علاج المريض')}
                     </button>
                   </div>
                 </div>

@@ -3,8 +3,11 @@ export type Role = 'patient' | 'doctor' | 'admin';
 export interface CarePlanItem {
   poseId: string;
   poseName?: string;
-  targetHold: number;
-  frequency?: string;
+  targetHold?: number | null;
+  frequency?: string | null;
+  reps?: number | null;
+  sets?: number | null;
+  restSeconds?: number | null;
 }
 
 export interface FrameLog {

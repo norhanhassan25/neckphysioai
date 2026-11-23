@@ -63,8 +63,11 @@ export const carePlanSchema = z.object({
       z.object({
         poseId: z.string().min(1).max(64),
         poseName: z.string().max(120).optional(),
-        targetHold: z.number().int().min(5).max(600),
-        frequency: z.string().max(40).optional(),
+        targetHold: z.number().int().min(0).max(600).optional().nullable(),
+        frequency: z.string().max(40).optional().nullable(),
+        reps: z.number().int().min(1).max(100).optional().nullable(),
+        sets: z.number().int().min(1).max(50).optional().nullable(),
+        restSeconds: z.number().int().min(0).max(600).optional().nullable(),
       })
     )
     .max(30),

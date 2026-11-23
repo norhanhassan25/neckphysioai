@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../utils/auth';
 import { SessionData } from '../game/types';
 import { POSES } from '../data/poses';
+import { NECK_EXERCISES } from '../data/neckExercises';
 import { TopBar, Doodle, CuteFace } from './primitives';
 import {
   Award,
@@ -519,12 +520,23 @@ export function HomeScreen() {
                   
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
                     {carePlan.map((planItem: any, index: number) => {
-                      const poseConfig = POSES.find(p => p.id === planItem.poseId);
+                      const matchedNeck = NECK_EXERCISES.find(e => e.id === planItem.poseId);
+                      const matchedPose = POSES.find(p => p.id === planItem.poseId);
+                      const displayName = planItem.poseName || matchedNeck?.title || matchedPose?.name || planItem.poseId;
+                      const isNeck = !!matchedNeck;
+
                       return (
                         <div 
                           key={index}
                           className="plush tap"
-                          onClick={() => store.selectPose(planItem.poseId)}
+                          onClick={() => {
+                            if (isNeck) {
+                              store.setSelectedNeckExercise(planItem.poseId);
+                              store.setScreen('neck-video');
+                            } else {
+                              store.selectPose(planItem.poseId);
+                            }
+                          }}
                           style={{
                             background: 'var(--cream)',
                             padding: 16,
@@ -539,14 +551,18 @@ export function HomeScreen() {
                         >
                           <div>
                             <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)' }}>
-                              {poseConfig?.name || planItem.poseId}
+                              {displayName}
                             </div>
-                            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink-soft)', marginTop: 4 }}>
-                              Goal hold: <span style={{ color: 'var(--peach-deep)' }}>{planItem.targetHold}s</span> • {planItem.frequency}
+                            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink-soft)', marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                              {planItem.sets ? <span>{planItem.sets} {tr('Sets', 'مجموعات')} ×</span> : null}
+                              <span>{planItem.reps ? `${planItem.reps} ${tr('Reps', 'تكرار')}` : tr('Free session', 'جلسة حرة')}</span>
+                              {planItem.targetHold ? <span>• {tr('Hold', 'ثبات')}: <span style={{ color: 'var(--peach-deep)' }}>{planItem.targetHold}s</span></span> : null}
+                              {planItem.restSeconds ? <span>• {tr('Rest', 'راحة')}: {planItem.restSeconds}s</span> : null}
+                              <span>• {planItem.frequency || tr('Daily', 'يومياً')}</span>
                             </div>
                           </div>
                           <span className="btn-plush primary" style={{ fontSize: 11, padding: '4px 10px', borderWidth: '1.5px', borderRadius: 6, height: 'auto', margin: 0, flexShrink: 0 }}>
-                            Start
+                            {tr('Start', 'ابدأ')}
                           </span>
                         </div>
                       );

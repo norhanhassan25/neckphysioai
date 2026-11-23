@@ -44,10 +44,8 @@ export async function provisionClinicDoctor(hashPassword: (password: string) => 
     await run(`INSERT INTO users (user_id,name,email,password_hash,role,approved) VALUES ($1,$2,$3,$4,'doctor',TRUE)`,
       [doctorId,config.doctorName,config.doctorEmail,hashPassword(config.doctorPassword)]);
   }
-  // Give the single configured doctor access to patient histories, including existing accounts.
-  const doctor = await findUserByEmail(config.doctorEmail);
-  if (doctor) await run("UPDATE users SET doctor_id=$1 WHERE role='patient' AND doctor_id IS NULL", [doctor.user_id]);
-  console.log('[doctor] Clinic doctor account available; unassigned patients linked.');
+  // Clinic doctor provisioned. Doctor assignments to patients are strictly managed by Admin and never overridden on restart.
+  console.log('[doctor] Clinic doctor account available.');
 }
 
 // Provision permanent Super Admin account
