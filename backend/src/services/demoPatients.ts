@@ -87,24 +87,6 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Cervical isometric stability',
     sessions: createNineSessions([76, 77, 78, 79, 80, 81, 82, 83, 84], 1)
   },
-  // 3. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
-  {
-    name: 'اسيل محمد عزيز',
-    email: 'aseelaziz@gmail.com',
-    age: 26,
-    experience: 'Intermediate',
-    goal: 'Improve neck mobility & proprioception',
-    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 2)
-  },
-  // 3b. اسيل محمد عزيز (alias): 9 sessions, 9 days, average 77%
-  {
-    name: 'اسيل محمد عزيز',
-    email: 'aseelmohammed@gmail.com',
-    age: 26,
-    experience: 'Intermediate',
-    goal: 'Improve neck mobility & proprioception',
-    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 2)
-  },
   // 4. yasmin Gamal fathy: 9 sessions, 9 days, average 63% (Sum = 567)
   {
     name: 'yasmin Gamal fathy',
@@ -174,8 +156,18 @@ export async function seedDemoPatients() {
       ('ali.mahmod@patient.example'),
       ('moataz.ahmed@patient.example'),
       ('aseel.aziz@patient.example'),
-      ('asmaa.salama@patient.example')
+      ('asmaa.salama@patient.example'),
+      ('aseelaziz@gmail.com'),
+      ('aseelmohammed@gmail.com')
     ON CONFLICT (email) DO NOTHING
+  `);
+
+  await run(`
+    DELETE FROM sessions WHERE user_id IN (
+      SELECT user_id FROM users WHERE LOWER(email) IN ('aseelaziz@gmail.com', 'aseelmohammed@gmail.com', 'aseel.aziz@patient.example') OR name LIKE '%اسيل%' OR name LIKE '%Aseel%'
+    ) OR user_id = 'usr_demo_aseel';
+
+    DELETE FROM users WHERE LOWER(email) IN ('aseelaziz@gmail.com', 'aseelmohammed@gmail.com', 'aseel.aziz@patient.example') OR name LIKE '%اسيل%' OR name LIKE '%Aseel%' OR user_id = 'usr_demo_aseel';
   `);
 
   await run(`
@@ -213,10 +205,10 @@ export async function seedDemoPatients() {
     DELETE FROM deleted_users WHERE LOWER(email) IN (
       'yaqeen@gmail.com',
       'layla@example.com',
-      'aseelaziz@gmail.com',
-      'aseelmohammed@gmail.com',
       'yasmin@example.com',
-      'alzahraa@example.com'
+      'alzahraa@example.com',
+      'ali@example.com',
+      'saraayman@gmail.com'
     )
   `);
 

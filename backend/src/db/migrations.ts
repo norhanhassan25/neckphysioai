@@ -218,8 +218,6 @@ export const migrations: Migration[] = [
       DELETE FROM deleted_users WHERE LOWER(email) IN (
         'yaqeen@gmail.com',
         'layla@example.com',
-        'aseelaziz@gmail.com',
-        'aseelmohammed@gmail.com',
         'yasmin@example.com',
         'alzahraa@example.com',
         'ali@example.com',
@@ -229,6 +227,28 @@ export const migrations: Migration[] = [
       -- Remove demo placeholders so patients can Sign Up themselves with their own passwords without 'Email already registered' error
       DELETE FROM sessions WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali', 'usr_demo_sara');
       DELETE FROM users WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali', 'usr_demo_sara');
+    `,
+  },
+
+  {
+    id: 9,
+    name: 'permanently_delete_aseel_accounts',
+    sql: `
+      -- Delete any sessions associated with Aseel accounts or name
+      DELETE FROM sessions WHERE user_id IN (
+        SELECT user_id FROM users WHERE LOWER(email) IN ('aseelaziz@gmail.com', 'aseelmohammed@gmail.com', 'aseel.aziz@patient.example') OR name LIKE '%اسيل%' OR name LIKE '%Aseel%'
+      ) OR user_id = 'usr_demo_aseel';
+
+      -- Delete any user accounts for Aseel
+      DELETE FROM users WHERE LOWER(email) IN ('aseelaziz@gmail.com', 'aseelmohammed@gmail.com', 'aseel.aziz@patient.example') OR name LIKE '%اسيل%' OR name LIKE '%Aseel%' OR user_id = 'usr_demo_aseel';
+
+      -- Add to deleted_users to permanently prevent seeding or auto-recreation
+      CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now());
+      INSERT INTO deleted_users (email) VALUES
+        ('aseelaziz@gmail.com'),
+        ('aseelmohammed@gmail.com'),
+        ('aseel.aziz@patient.example')
+      ON CONFLICT (email) DO NOTHING;
     `,
   },
 ];
