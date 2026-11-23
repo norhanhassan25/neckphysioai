@@ -87,14 +87,14 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     goal: 'Reduce stiffness from desk work',
     sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 1)
   },
-  // 3. اسماء سلامه: 9 sessions, 9 days, average 71% (Sum = 639)
+  // 3. Alzahraa salama: 9 sessions, 9 days, average 71% (Sum = 639)
   {
-    name: 'اسماء سلامه',
-    email: 'asmaa.salama@patient.example',
+    name: 'Alzahraa salama',
+    email: 'alzahraa@example.com',
     age: 31,
     experience: 'Beginner',
     goal: 'Strengthen cervical flexors',
-    sessions: createNineSessions([68, 69, 70, 70, 71, 72, 72, 73, 74], 2)
+    sessions: createNineSessions([67, 68, 69, 70, 71, 72, 73, 74, 75], 2)
   },
   // 4. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
   {
@@ -188,7 +188,7 @@ export async function seedDemoPatients() {
   const doctorId = doctor?.user_id ?? null;
 
   // Clean up any legacy placeholder emails
-  await run("DELETE FROM users WHERE email = 'aseel.aziz@patient.example'");
+  await run("DELETE FROM users WHERE email IN ('aseel.aziz@patient.example', 'asmaa.salama@patient.example')");
 
   for (const p of DEMO_PATIENTS) {
     let user = await one<{ user_id: string }>("SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)", [p.email]);
