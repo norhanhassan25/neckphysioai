@@ -131,6 +131,15 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     experience: 'Beginner',
     goal: 'Cervical posture & tracking alignment',
     sessions: createNineSessions([64, 65, 66, 67, 68, 69, 70, 71, 72], 1)
+  },
+  // 9. مريم السيد محمد: 9 sessions, 9 days, average 68% (Sum = 612)
+  {
+    name: 'مريم السيد محمد',
+    email: 'mariamelsayed@gmail.com',
+    age: 24,
+    experience: 'Beginner',
+    goal: 'Cervical posture correction & mobility',
+    sessions: createNineSessions([64, 65, 66, 67, 68, 69, 70, 71, 72], 2)
   }
 ];
 
@@ -208,7 +217,8 @@ export async function seedDemoPatients() {
       'yasmin@example.com',
       'alzahraa@example.com',
       'ali@example.com',
-      'saraayman@gmail.com'
+      'saraayman@gmail.com',
+      'mariamelsayed@gmail.com'
     )
   `);
 

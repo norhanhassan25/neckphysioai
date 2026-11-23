@@ -15,8 +15,7 @@ import {
   HeartPulse,
   Search,
   Download,
-  Plus,
-  Trash2
+  Plus
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -165,24 +164,7 @@ export function DoctorPortal() {
     document.body.removeChild(link);
   };
 
-  const handleDeletePatient = async (patientId: string, patientName: string) => {
-    const confirmMsg = tr(
-      `Are you sure you want to permanently delete patient "${patientName}"? This action cannot be undone.`,
-      `هل أنتِ متأكدة من رغبتك في حذف المريض "${patientName}" نهائياً من الموقع؟ لا يمكن التراجع عن هذا الإجراء.`
-    );
-    if (!window.confirm(confirmMsg)) return;
-    try {
-      const res = await apiFetch(`/api/doctor/patients/${patientId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setSelectedPatient(null);
-        await fetchPatients();
-      } else {
-        alert(tr('Failed to delete patient', 'فشل حذف المريض'));
-      }
-    } catch (e) {
-      alert(tr('Error deleting patient', 'حدث خطأ أثناء حذف المريض'));
-    }
-  };
+  // Patient deletion is restricted to Admin only — doctors cannot delete patients.
 
   const handleSaveCarePlan = async (updatedPlan: CarePlanItem[]) => {
     if (!selectedPatient) return;
@@ -254,10 +236,10 @@ export function DoctorPortal() {
         <p>{tr('Assessments:','الاستبيانات:')} {neckDetails.assessments?.length||0} | {tr('Tracking sessions:','جلسات التتبع:')} {neckDetails.sessions?.length||0}</p>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
           <thead><tr>{[tr('Timing / Days','التوقيت / الأيام'),tr('Exercise','التمرين'),tr('Reps','التكرارات'),tr('Sets','المجموعات'),tr('Match %','التطابق %'),tr('Pain before→after','الألم قبل←بعد'),tr('Plan done','الخطة'),tr('Flags','تنبيهات')].map(h=><th key={h} style={{textAlign:'start',borderBottom:'1px solid #ccc',padding:4}}>{h}</th>)}</tr></thead>
-          <tbody>{(neckDetails.sessions||[]).map((x:any)=>{
+          <tbody>{(neckDetails.sessions||[]).map((x:any,xi:number)=>{
             const pf=x.pain_after!=null&&(x.pain_after>=7||(x.pain_before!=null&&x.pain_after-x.pain_before>=3));
-            const daysAgo = Math.max(0, Math.round((Date.now() - new Date(x.created_at).getTime()) / 86400000));
-            const timingStr = daysAgo === 0 ? tr('Today', 'اليوم') : daysAgo === 1 ? tr('1 day ago', 'منذ يوم') : tr(`${daysAgo}d ago`, `منذ ${daysAgo} يوم`);
+            const sessionNum = (neckDetails.sessions?.length||0) - xi;
+            const timingStr = tr(`Day ${sessionNum}`, `اليوم ${sessionNum}`);
             return <tr key={x.id}>
             <td style={{padding:4, fontWeight: 800}}>{timingStr}</td><td style={{padding:4}}>{x.exercise_id}</td>
             <td style={{padding:4}}>{x.reps_completed??'—'}{x.reps_target?` / ${x.reps_target}`:''}</td><td style={{padding:4}}>{x.sets_target?`${x.sets_completed??0} / ${x.sets_target}`:'—'}</td>
@@ -510,27 +492,6 @@ export function DoctorPortal() {
                   title="Export workout logs to CSV"
                 >
                   <Download size={14} /> Export CSV
-                </button>
-                <button
-                  onClick={() => handleDeletePatient(selectedPatient.id, selectedPatient.name)}
-                  className="tap"
-                  style={{
-                    fontSize: '12px',
-                    padding: '8px 12px',
-                    borderRadius: 'var(--r-sm)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: '#FFEAE6',
-                    color: '#FF4D4D',
-                    border: '2.5px solid var(--line)',
-                    fontWeight: 900,
-                    cursor: 'pointer',
-                    boxShadow: '2px 2px 0 var(--line)'
-                  }}
-                  title={tr('Delete patient account', 'حذف حساب المريض نهائياً')}
-                >
-                  <Trash2 size={14} /> {tr('Delete Patient', 'حذف المريض')}
                 </button>
                 <button 
                   onClick={() => setSelectedPatient(null)}
@@ -943,9 +904,10 @@ export function DoctorPortal() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 800 }}>
                   {(() => {
-                    const daysAgo = Math.max(0, Math.round((Date.now() - selectedSession.date) / 86400000));
-                    const timingText = daysAgo === 0 ? tr('Today', 'اليوم') : daysAgo === 1 ? tr('1 day ago', 'منذ يوم') : tr(`${daysAgo} days ago`, `منذ ${daysAgo} أيام`);
-                    return <span style={{ color: 'var(--ink-soft)' }}>{tr('Timing', 'التوقيت')}: <b>{timingText}</b></span>;
+                    const sessionIdx = patientHistory.findIndex(s => s.id === selectedSession.id);
+                    const sessionDayNum = sessionIdx >= 0 ? patientHistory.length - sessionIdx : 1;
+                    const timingText = tr(`Day ${sessionDayNum}`, `اليوم ${sessionDayNum}`);
+                    return <span style={{ color: 'var(--ink-soft)' }}>{tr('Day', 'اليوم')}: <b>{timingText}</b></span>;
                   })()}
                   <span style={{ color: 'var(--ink)' }}>Hold Efficiency: {selectedSession.holdTimeSeconds}s / {selectedSession.durationSeconds}s</span>
                 </div>
@@ -978,11 +940,8 @@ export function DoctorPortal() {
                     </thead>
                     <tbody>
                       {patientHistory.map((s, idx) => {
-                        const daysAgo = Math.max(0, Math.round((Date.now() - s.date) / 86400000));
                         const sessionDayNum = patientHistory.length - idx;
-                        const timingText = daysAgo === 0 
-                          ? tr(`Day ${sessionDayNum} (Today)`, `اليوم ${sessionDayNum} (اليوم)`)
-                          : tr(`Day ${sessionDayNum} (${daysAgo}d ago)`, `اليوم ${sessionDayNum} (منذ ${daysAgo} يوم)`);
+                        const timingText = tr(`Day ${sessionDayNum}`, `اليوم ${sessionDayNum}`);
                         return (
                           <tr 
                             key={s.id} 

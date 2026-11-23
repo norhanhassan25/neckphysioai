@@ -251,6 +251,16 @@ export const migrations: Migration[] = [
       ON CONFLICT (email) DO NOTHING;
     `,
   },
+
+  {
+    id: 10,
+    name: 'whitelist_mariam_elsayed',
+    sql: `
+      -- Ensure مريم السيد is never blocked from being seeded
+      CREATE TABLE IF NOT EXISTS deleted_users (email TEXT PRIMARY KEY, deleted_at TIMESTAMPTZ DEFAULT now());
+      DELETE FROM deleted_users WHERE LOWER(email) = 'mariamelsayed@gmail.com';
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
