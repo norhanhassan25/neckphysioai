@@ -36,16 +36,14 @@ import {
 import { askCoachQuestion } from '../utils/geminiService';
 import { useLanguage } from '../i18n/LanguageContext';
 
-function relativeDate(ms: number): string {
+function relativeDate(ms: number, isArabic = false): string {
   const diffMs = Date.now() - ms;
-  const minutes = Math.round(diffMs / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const days = Math.max(0, Math.round(diffMs / (24 * 60 * 60 * 1000)));
+  if (days === 0) return isArabic ? 'اليوم' : 'Today';
+  if (days === 1) return isArabic ? 'منذ يوم واحد' : '1 day ago';
+  if (days === 2) return isArabic ? 'منذ يومين' : '2 days ago';
+  if (days <= 10) return isArabic ? `منذ ${days} أيام` : `${days} days ago`;
+  return isArabic ? `منذ ${days} يوم` : `${days} days ago`;
 }
 
 interface StatCardProps {
@@ -412,8 +410,8 @@ export function HomeScreen() {
 
   const trendData = [...history]
     .reverse()
-    .map(s => ({
-      date: new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    .map((s, idx) => ({
+      date: language === 'ar' ? `اليوم ${idx + 1}` : `Day ${idx + 1}`,
       score: s.averageScore,
       hold: s.holdTimeSeconds
     }));
@@ -636,7 +634,7 @@ export function HomeScreen() {
                           <div>
                             <h3 style={{ fontSize: 17, fontWeight: 800 }}>{session.poseName}</h3>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>
-                              <span>{relativeDate(session.date)}</span>
+                              <span>{relativeDate(session.date, language === 'ar')}</span>
                               <span>•</span>
                               <span>Hold: {session.holdTimeSeconds}s</span>
                               <span>•</span>

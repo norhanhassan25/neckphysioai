@@ -253,9 +253,13 @@ export function DoctorPortal() {
         <h3>{tr('Neck assessments and camera sessions:','استبيانات الرقبة وجلسات الكاميرا:')} {selectedPatient.name}</h3>
         <p>{tr('Assessments:','الاستبيانات:')} {neckDetails.assessments?.length||0} | {tr('Tracking sessions:','جلسات التتبع:')} {neckDetails.sessions?.length||0}</p>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-          <thead><tr>{[tr('Date','التاريخ'),tr('Exercise','التمرين'),tr('Reps','التكرارات'),tr('Sets','المجموعات'),tr('Match %','التطابق %'),tr('Pain before→after','الألم قبل←بعد'),tr('Plan done','الخطة'),tr('Flags','تنبيهات')].map(h=><th key={h} style={{textAlign:'start',borderBottom:'1px solid #ccc',padding:4}}>{h}</th>)}</tr></thead>
-          <tbody>{(neckDetails.sessions||[]).map((x:any)=>{const pf=x.pain_after!=null&&(x.pain_after>=7||(x.pain_before!=null&&x.pain_after-x.pain_before>=3));return <tr key={x.id}>
-            <td style={{padding:4}}>{new Date(x.created_at).toLocaleString()}</td><td style={{padding:4}}>{x.exercise_id}</td>
+          <thead><tr>{[tr('Timing / Days','التوقيت / الأيام'),tr('Exercise','التمرين'),tr('Reps','التكرارات'),tr('Sets','المجموعات'),tr('Match %','التطابق %'),tr('Pain before→after','الألم قبل←بعد'),tr('Plan done','الخطة'),tr('Flags','تنبيهات')].map(h=><th key={h} style={{textAlign:'start',borderBottom:'1px solid #ccc',padding:4}}>{h}</th>)}</tr></thead>
+          <tbody>{(neckDetails.sessions||[]).map((x:any)=>{
+            const pf=x.pain_after!=null&&(x.pain_after>=7||(x.pain_before!=null&&x.pain_after-x.pain_before>=3));
+            const daysAgo = Math.max(0, Math.round((Date.now() - new Date(x.created_at).getTime()) / 86400000));
+            const timingStr = daysAgo === 0 ? tr('Today', 'اليوم') : daysAgo === 1 ? tr('1 day ago', 'منذ يوم') : tr(`${daysAgo}d ago`, `منذ ${daysAgo} يوم`);
+            return <tr key={x.id}>
+            <td style={{padding:4, fontWeight: 800}}>{timingStr}</td><td style={{padding:4}}>{x.exercise_id}</td>
             <td style={{padding:4}}>{x.reps_completed??'—'}{x.reps_target?` / ${x.reps_target}`:''}</td><td style={{padding:4}}>{x.sets_target?`${x.sets_completed??0} / ${x.sets_target}`:'—'}</td>
             <td style={{padding:4}}>{x.match_percent!=null?Math.round(x.match_percent):'—'}</td><td style={{padding:4}}>{x.pain_before??'—'} → {x.pain_after??'—'}</td>
             <td style={{padding:4}}>{x.plan_completed==null?'—':x.plan_completed?'✓':'✗'}</td>
@@ -938,7 +942,11 @@ export function DoctorPortal() {
                   </ResponsiveContainer>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 800 }}>
-                  <span style={{ color: 'var(--ink-soft)' }}>Practice Date: {new Date(selectedSession.date).toLocaleDateString()}</span>
+                  {(() => {
+                    const daysAgo = Math.max(0, Math.round((Date.now() - selectedSession.date) / 86400000));
+                    const timingText = daysAgo === 0 ? tr('Today', 'اليوم') : daysAgo === 1 ? tr('1 day ago', 'منذ يوم') : tr(`${daysAgo} days ago`, `منذ ${daysAgo} أيام`);
+                    return <span style={{ color: 'var(--ink-soft)' }}>{tr('Timing', 'التوقيت')}: <b>{timingText}</b></span>;
+                  })()}
                   <span style={{ color: 'var(--ink)' }}>Hold Efficiency: {selectedSession.holdTimeSeconds}s / {selectedSession.durationSeconds}s</span>
                 </div>
               </div>
@@ -960,44 +968,51 @@ export function DoctorPortal() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'left' }}>
                     <thead>
                       <tr style={{ borderBottom: '2.5px solid var(--line)', color: 'var(--ink-soft)', fontWeight: 900 }}>
-                        <th style={{ padding: '8px 4px' }}>Date</th>
-                        <th style={{ padding: '8px 4px' }}>Pose</th>
-                        <th style={{ padding: '8px 4px' }}>Duration</th>
-                        <th style={{ padding: '8px 4px' }}>Hold</th>
-                        <th style={{ padding: '8px 4px' }}>Score</th>
-                        <th style={{ padding: '8px 4px' }}>Grade</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Timing / Day', 'اليوم / التوقيت')}</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Pose', 'التمرين')}</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Duration', 'المدة')}</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Hold', 'الثبات')}</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Score', 'الدرجة')}</th>
+                        <th style={{ padding: '8px 4px' }}>{tr('Grade', 'التقييم')}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {patientHistory.map(s => (
-                        <tr 
-                          key={s.id} 
-                          onClick={() => setSelectedSession(s)}
-                          style={{ 
-                            borderBottom: '2px dashed var(--line)', 
-                            fontWeight: 800, 
-                            cursor: 'pointer',
-                            background: selectedSession?.id === s.id ? 'var(--cream)' : 'transparent'
-                          }}
-                        >
-                          <td style={{ padding: '10px 4px' }}>{new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</td>
-                          <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>{s.poseName}</td>
-                          <td style={{ padding: '10px 4px' }}>{s.durationSeconds}s</td>
-                          <td style={{ padding: '10px 4px' }}>{s.holdTimeSeconds}s</td>
-                          <td style={{ padding: '10px 4px' }}>{s.averageScore}%</td>
-                          <td style={{ padding: '10px 4px' }}>
-                            <span style={{
-                              background: s.grade === 'A' ? 'var(--mint)' : s.grade === 'B' ? 'var(--butter)' : '#FFEAE6',
-                              padding: '2px 8px',
-                              borderRadius: 6,
-                              border: '2.5px solid var(--line)',
-                              fontSize: 11
-                            }}>
-                              {s.grade}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {patientHistory.map((s, idx) => {
+                        const daysAgo = Math.max(0, Math.round((Date.now() - s.date) / 86400000));
+                        const sessionDayNum = patientHistory.length - idx;
+                        const timingText = daysAgo === 0 
+                          ? tr(`Day ${sessionDayNum} (Today)`, `اليوم ${sessionDayNum} (اليوم)`)
+                          : tr(`Day ${sessionDayNum} (${daysAgo}d ago)`, `اليوم ${sessionDayNum} (منذ ${daysAgo} يوم)`);
+                        return (
+                          <tr 
+                            key={s.id} 
+                            onClick={() => setSelectedSession(s)}
+                            style={{ 
+                              borderBottom: '2px dashed var(--line)', 
+                              fontWeight: 800, 
+                              cursor: 'pointer',
+                              background: selectedSession?.id === s.id ? 'var(--cream)' : 'transparent'
+                            }}
+                          >
+                            <td style={{ padding: '10px 4px', fontWeight: 900 }}>{timingText}</td>
+                            <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>{s.poseName}</td>
+                            <td style={{ padding: '10px 4px' }}>{s.durationSeconds}s</td>
+                            <td style={{ padding: '10px 4px' }}>{s.holdTimeSeconds}s</td>
+                            <td style={{ padding: '10px 4px' }}>{s.averageScore}%</td>
+                            <td style={{ padding: '10px 4px' }}>
+                              <span style={{
+                                background: s.grade === 'A' ? 'var(--mint)' : s.grade === 'B' ? 'var(--butter)' : '#FFEAE6',
+                                padding: '2px 8px',
+                                borderRadius: 6,
+                                border: '2.5px solid var(--line)',
+                                fontSize: 11
+                              }}>
+                                {s.grade}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

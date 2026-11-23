@@ -74,7 +74,7 @@ export function DebriefScreen() {
                 {activeSession.poseName} Grader Report
               </h1>
               <p style={{ fontSize: 14, color: 'var(--ink-soft)', fontWeight: 700, margin: '4px 0 0' }}>
-                Evaluated on {new Date(activeSession.date).toLocaleString()}
+                Session Completed Successfully • تم إنجاز الجلسة بنجاح
               </p>
             </div>
           </div>
