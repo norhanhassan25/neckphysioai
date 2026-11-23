@@ -64,8 +64,8 @@ export const ISOMETRIC_STAGES: Record<number, Targets> = {
   3: { ...common, holdSeconds: 5, moves: ['forward', 'back', 'right', 'left'], maxDriftPct: 8, maxRollDeg: 8, maxOrientDeg: 8 },
 };
 export const LASER_STAGES: Record<number, Targets> = {
-  1: { ...common, holdSeconds: 1, dwellSeconds: 1.2, jpeMaxDeg: 8.5, targetAmplitudeDeg: 10, targetRadiusDeg: 5.5 },
-  2: { ...common, holdSeconds: 1, dwellSeconds: 1.2, jpeMaxDeg: 7.5, targetAmplitudeDeg: 12, targetRadiusDeg: 5.0 },
+  1: { ...common, holdSeconds: 1, dwellSeconds: 1.0, jpeMaxDeg: 12.0, targetAmplitudeDeg: 10, targetRadiusDeg: 8.5 },
+  2: { ...common, holdSeconds: 1, dwellSeconds: 1.0, jpeMaxDeg: 11.0, targetAmplitudeDeg: 12, targetRadiusDeg: 8.0 },
 };
 export const NEUTRAL_STAGES: Record<number, Targets> = {
   1: { ...common, holdSeconds: 6, referenceCva: 50, cvaTolDeg: 14, maxPitchErrDeg: 10, maxPostureDriftDeg: 7, maxFwdPct: 11 },
@@ -73,9 +73,9 @@ export const NEUTRAL_STAGES: Record<number, Targets> = {
   3: { ...common, holdSeconds: 6, referenceCva: 50, cvaTolDeg: 16, maxPitchErrDeg: 12, maxPostureDriftDeg: 8, maxFwdPct: 12 },
 };
 export const TRACKING_STAGES: Record<number, Targets> = {
-  1: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
-  2: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
-  3: { ...common, holdSeconds: 0, rangeDeg: 22, minTimeOnTargetPct: 28, trialSeconds: 18, maxLagMs: 750 },
+  1: { ...common, holdSeconds: 0, rangeDeg: 28, minTimeOnTargetPct: 20, trialSeconds: 20, maxLagMs: 950 },
+  2: { ...common, holdSeconds: 0, rangeDeg: 28, minTimeOnTargetPct: 20, trialSeconds: 20, maxLagMs: 950 },
+  3: { ...common, holdSeconds: 0, rangeDeg: 28, minTimeOnTargetPct: 20, trialSeconds: 20, maxLagMs: 950 },
 };
 const make = (
   id: string,
@@ -138,9 +138,9 @@ export const TRACKER_CONFIGS: Record<string, ExerciseConfig> = {
     'front',
     1,
     LASER_STAGES[1],
-    0.23,
-    'Virtual laser controlled by HEAD direction (not eye gaze); no physical laser is tracked. Turn right → the dot moves right; look down → it moves down.',
-    'ليزر افتراضي بيتحرك باتجاه الرأس (مش نظرة العين)؛ لا يتم تتبع ليزر حقيقي. لفّي يمين ← النقطة تروح يمين؛ ميّلي رأسك لتحت ← النقطة تنزل لتحت.',
+    0.40,
+    'Laser biofeedback tracking matching the video demonstration. Expanded error margin for comfortable practice.',
+    'تتبع حركة الرأس باستخدام التغذية الراجعة بالليزر (Laser Biofeedback) زي الفيديو، مع توسيع دائرة السماحية وهامش الخطأ لتسهيل الحركة على المريض.',
   ),
   'tracking-1': make(
     'tracking-1',
@@ -148,9 +148,9 @@ export const TRACKER_CONFIGS: Record<string, ExerciseConfig> = {
     'front',
     1,
     TRACKING_STAGES[1],
-    0.35,
-    'Follow the moving target using gentle HEAD movement (eye gaze is not tracked). Wider tolerance for natural movement variation.',
-    'اتبعي الهدف المتحرك بحركة رأس هادئة (نظرة العين مش بتتتبع). هامش أوسع لتنوع الحركة الطبيعية.',
+    0.45,
+    'Follow the moving target using gentle head movement as shown in the video. Expanded error margin for comfortable practice.',
+    'تتبع الهدف المتحرك بحركة رأس هادئة زي الفيديو، مع توسيع دائرة السماحية وهامش الخطأ لتسهيل أداء الحركة على المريض.',
   ),
   'tracking-2': make(
     'tracking-2',

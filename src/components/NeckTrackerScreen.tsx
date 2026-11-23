@@ -41,7 +41,7 @@ const info: { [k: string]: [string, string] } = {
   stable: ['Head direction relatively stable. Muscle force is not measured.', 'اتجاه الرأس ثابت نسبيًا؛ قوة العضلات غير مقاسة.'],
   drift: ['Head position moved away from calibration reference.', 'الرأس ابتعد عن الوضع المرجعي للمعايرة.'],
   moving: ['Movement observed.', 'تم رصد حركة.'],
-  target: ['Virtual target reached.', 'وصلتي للهدف الافتراضي.'],
+  target: ['Target reached.', 'وصلت للهدف المحدد.'],
   offTarget: ['Move gently toward the on-screen target.', 'حركي الرأس بهدوء نحو الهدف على الشاشة.'],
   noSide: ['For this exercise, show the side of your head and shoulder.', 'للتمرين ده، أظهري جانب الرأس والكتف في الكاميرا.'],
   lost: ['Tracking interrupted. Reposition your face and shoulders.', 'التتبع انقطع؛ عدّلي وضع الرأس والكتفين.'],
@@ -1034,7 +1034,7 @@ export function NeckTrackerScreen() {
         {(mode === 'laser' || mode === 'tracking') && (
           <div style={{ margin: '14px auto', maxWidth: 420, textAlign: 'center' }}>
             <p>
-              {tr('Virtual head-controlled dot (blue) and target (orange)', 'النقطة المتحركة بالرأس (أزرق) والهدف (برتقالي)')}
+              {tr('Head-guided point (blue) and target zone (orange)', 'نقطة توجيه حركة الرأس بالليزر (أزرق) ودائرة الهدف (برتقالي)')}
             </p>
             <svg
               viewBox="0 0 240 160"
@@ -1045,7 +1045,7 @@ export function NeckTrackerScreen() {
               <circle
                 cx={120 + (observation?.target.x ?? 0) * 85}
                 cy={80 + (observation?.target.y ?? 0) * 60}
-                r={mode === 'laser' ? 22 : config?.stage === 2 ? 15 : 22}
+                r={30}
                 fill="none"
                 stroke="#ed8f40"
                 strokeWidth="4"
