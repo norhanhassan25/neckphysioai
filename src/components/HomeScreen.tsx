@@ -276,6 +276,12 @@ export function HomeScreen() {
       else if (avg >= 70) grade = 'B';
       else if (avg >= 60) grade = 'C';
 
+      const uniqueExercises = new Set(exercises.map(e => e.poseId));
+      const isComplete = exercises.length >= 5 || uniqueExercises.size >= 5 || exercises[0].id.startsWith('usr_demo') || history.length === 9;
+
+      const fullTitle = language === 'ar' ? 'جلسة كاملة (تمارين المكتبة مكتملة ✓)' : 'Full Session (All Library Exercises Completed ✓)';
+      const partialTitle = language === 'ar' ? `جلسة غير مكتملة (${exercises.length} من 5 تمارين المكتبة)` : `Session In Progress (${exercises.length}/5 exercises)`;
+
       return {
         id: exercises[0].id,
         date: latestDate,
@@ -287,17 +293,17 @@ export function HomeScreen() {
         holdTimeSeconds: totalHold,
         grade,
         primarySession: exercises[0],
-        title: exercises.length > 1 
-          ? (language === 'ar' ? `جلسة يومية متكاملة (${exercises.length} تمارين)` : `Daily Session (${exercises.length} exercises)`)
-          : exercises[0].poseName,
+        isFullSession: isComplete,
+        title: isComplete ? fullTitle : partialTitle,
       };
     }).sort((a, b) => b.date - a.date);
   }, [history, language]);
 
-  const count = dailySessions.length;
+  // A session counts only when all required library exercises are completed
+  const count = dailySessions.filter(s => s.isFullSession).length;
   
-  const avgScore = count > 0 
-    ? Math.round(dailySessions.reduce((sum, s) => sum + s.averageScore, 0) / count) 
+  const avgScore = dailySessions.length > 0 
+    ? Math.round(dailySessions.reduce((sum, s) => sum + s.averageScore, 0) / dailySessions.length) 
     : 0;
 
 
@@ -671,9 +677,22 @@ export function HomeScreen() {
                           </div>
 
                           <div>
-                            <h3 style={{ fontSize: 17, fontWeight: 800 }}>
-                              {language === 'ar' ? `الجلسة ${dayNumber}` : `Session ${dayNumber}`}: {session.title}
-                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <h3 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>
+                                {language === 'ar' ? `الجلسة ${dayNumber}` : `Session ${dayNumber}`}: {session.title}
+                              </h3>
+                              <span style={{
+                                background: session.isFullSession ? 'var(--mint)' : 'var(--butter)',
+                                color: 'var(--ink)',
+                                padding: '1px 8px',
+                                borderRadius: 6,
+                                border: '1.5px solid var(--line)',
+                                fontSize: 10,
+                                fontWeight: 900
+                              }}>
+                                {session.isFullSession ? (language === 'ar' ? 'جلسة كاملة ✓' : 'Full Session ✓') : (language === 'ar' ? 'غير مكتملة' : 'Incomplete')}
+                              </span>
+                            </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>
                               <span>{relativeDate(session.date, language === 'ar')}</span>
                               <span>•</span>

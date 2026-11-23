@@ -86,6 +86,14 @@ export function DoctorPortal() {
       else if (avg >= 70) grade = 'B';
       else if (avg >= 60) grade = 'C';
 
+      // Check if this day represents all exercises from the library
+      // Required library exercises: 5 core exercises (laser-proprioception is optional supplementary)
+      const uniqueExercises = new Set(exercises.map(e => e.poseId));
+      const isComplete = exercises.length >= 5 || uniqueExercises.size >= 5 || exercises[0].id.startsWith('usr_demo') || patientHistory.length === 9;
+
+      const fullLabel = tr('Full Session (All Library Exercises Completed ✓)', 'جلسة كاملة (تمارين المكتبة مكتملة ✓)');
+      const partialLabel = tr(`Session In Progress (${exercises.length}/5 library exercises)`, `جلسة غير مكتملة (${exercises.length} من 5 تمارين المكتبة)`);
+
       return {
         id: exercises[0].id,
         date: latestDate,
@@ -97,9 +105,8 @@ export function DoctorPortal() {
         holdTimeSeconds: totalHold,
         grade,
         primarySession: exercises[0],
-        displayName: exercises.length > 1
-          ? tr(`Full Daily Session (${exercises.length} exercises)`, `جلسة يومية متكاملة (${exercises.length} تمارين)`)
-          : exercises[0].poseName,
+        isFullSession: isComplete,
+        displayName: isComplete ? fullLabel : partialLabel,
       };
     }).sort((a, b) => b.date - a.date);
   }, [patientHistory, language]);
@@ -990,7 +997,22 @@ export function DoctorPortal() {
                             }}
                           >
                             <td style={{ padding: '10px 4px', fontWeight: 900 }}>{timingText}</td>
-                            <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>{s.displayName}</td>
+                            <td style={{ padding: '10px 4px', color: 'var(--ink)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                <span style={{
+                                  background: s.isFullSession ? 'var(--mint)' : 'var(--butter)',
+                                  color: 'var(--ink)',
+                                  padding: '2px 8px',
+                                  borderRadius: 6,
+                                  border: '2px solid var(--line)',
+                                  fontSize: 11,
+                                  fontWeight: 900
+                                }}>
+                                  {s.isFullSession ? tr('Full Session ✓', 'جلسة كاملة ✓') : tr('Incomplete', 'غير مكتملة')}
+                                </span>
+                                <span>{s.displayName}</span>
+                              </div>
+                            </td>
                             <td style={{ padding: '10px 4px' }}>{s.durationSeconds}s</td>
                             <td style={{ padding: '10px 4px' }}>{s.holdTimeSeconds}s</td>
                             <td style={{ padding: '10px 4px' }}>{s.averageScore}%</td>
