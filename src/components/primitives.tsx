@@ -3,6 +3,7 @@ import { LogOut, RotateCcw, User, X } from 'lucide-react';
 import { applyTheme, getTheme, THEMES, Theme } from '../utils/theme';
 import { store, useScreen, useActiveTab, useUserData } from '../game/store';
 import { useAuth, useUser } from '../utils/auth';
+export { LanguageSwitch } from '../i18n/LanguageContext';
 import { LanguageSwitch, useLanguage } from '../i18n/LanguageContext';
 
 // --- DOODLE ICONS ---

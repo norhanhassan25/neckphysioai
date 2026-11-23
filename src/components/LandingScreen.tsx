@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useLanguage } from '../i18n/LanguageContext';
+import { useLanguage, LanguageSwitch } from '../i18n/LanguageContext';
 import { useAuth } from '../utils/auth';
-import { Wordmark, TopBar, ThemeSwitch, LanguageSwitch } from './primitives';
+import { Wordmark, TopBar, ThemeSwitch } from './primitives';
 import { store } from '../game/store';
 import { Heart, HeartHandshake, ClipboardList, Video, ScanFace, ArrowRight, ChevronDown, ShieldCheck } from 'lucide-react';
 
