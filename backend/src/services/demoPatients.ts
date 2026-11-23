@@ -99,7 +99,7 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
   // 4. اسيل محمد عزيز: 9 sessions, 9 days, average 79% (Sum = 711)
   {
     name: 'اسيل محمد عزيز',
-    email: 'aseel.aziz@patient.example',
+    email: 'aseelmohammed@gmail.com',
     age: 26,
     experience: 'Intermediate',
     goal: 'Improve neck mobility & proprioception',
@@ -186,6 +186,9 @@ export async function seedDemoPatients() {
   // Find a doctor account to link patients to, if any
   const doctor = await one<{ user_id: string }>("SELECT user_id FROM users WHERE role = 'doctor' LIMIT 1");
   const doctorId = doctor?.user_id ?? null;
+
+  // Clean up any legacy placeholder emails
+  await run("DELETE FROM users WHERE email = 'aseel.aziz@patient.example'");
 
   for (const p of DEMO_PATIENTS) {
     let user = await one<{ user_id: string }>("SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)", [p.email]);
