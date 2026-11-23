@@ -131,6 +131,15 @@ export const DEMO_PATIENTS: PatientSeedConfig[] = [
     experience: 'Intermediate',
     goal: 'Neck stability during athletic training',
     sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 5)
+  },
+  // 7. Ali: 9 sessions, 9 days, average 60% (Sum = 540)
+  {
+    name: 'علي',
+    email: 'ali@example.com',
+    age: 28,
+    experience: 'Beginner',
+    goal: 'Cervical mobility & posture rehabilitation',
+    sessions: createNineSessions([56, 57, 58, 59, 60, 61, 62, 63, 64], 0)
   }
 ];
 
@@ -293,4 +302,27 @@ export async function seedDemoPatients() {
 
   await run("INSERT INTO system_init (key) VALUES ('demo_seeded_final') ON CONFLICT (key) DO NOTHING");
   console.log(`[demo] Seeded ${DEMO_PATIENTS.length} patients with verified session history & score averages.`);
+}
+
+export async function seedPatientSessionsForUser(userId: string, email: string) {
+  const norm = email.toLowerCase().trim();
+  const p = DEMO_PATIENTS.find(x => x.email.toLowerCase().trim() === norm);
+  if (!p) return;
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  await run("DELETE FROM sessions WHERE user_id = $1", [userId]);
+  for (let i = 0; i < p.sessions.length; i++) {
+    const s = p.sessions[i];
+    const sessionDate = now - s.daysAgo * ONE_DAY_MS + (14 * 3600 * 1000 + i * 1800 * 1000);
+    const sessionId = `ses_${crypto.randomBytes(8).toString('hex')}`;
+    const grade = gradeForScore(s.score);
+    const frameLogs = generateFrameLogs(s.score);
+    await run(
+      `INSERT INTO sessions (id, user_id, pose_id, pose_name, date, duration_seconds, hold_time_seconds,
+                             average_score, grade, frame_logs, critique_status, ai_critique)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ready', $11)`,
+      [sessionId, userId, s.poseId, s.poseName, sessionDate, s.duration, s.holdTime, s.score, grade, JSON.stringify(frameLogs),
+       `<p>Clinical assessment for <b>${s.poseName}</b>: Performed with good cervical form. Average score: <b>${s.score}%</b>.</p>`]
+    );
+  }
 }

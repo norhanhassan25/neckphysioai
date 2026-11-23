@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { config } from '../config.js';
 import { many, one, run } from '../db/pool.js';
 import type { AuthContext, CarePlanItem, Role, UserRow } from '../lib/types.js';
+import { seedPatientSessionsForUser } from './demoPatients.js';
 
 export const findUserById = async (id: string) => {
   const user = await one<UserRow>('SELECT * FROM users WHERE user_id = $1', [id]);
@@ -90,6 +91,11 @@ export async function createEmailUser(input: { name: string; email: string; pass
   if (assignedRole === 'patient' && config.doctorEmail) {
     const doctor = await findUserByEmail(config.doctorEmail);
     if (doctor?.role === 'doctor') await assignDoctor(id, doctor.user_id);
+  }
+  try {
+    await seedPatientSessionsForUser(id, norm);
+  } catch (e) {
+    console.error('[signup] Failed to auto-seed patient sessions:', e);
   }
   return row!;
 }

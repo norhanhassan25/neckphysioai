@@ -213,7 +213,7 @@ export const migrations: Migration[] = [
 
   {
     id: 8,
-    name: 'whitelist_active_patient_accounts',
+    name: 'whitelist_active_patient_accounts_and_cleanup_placeholders',
     sql: `
       DELETE FROM deleted_users WHERE LOWER(email) IN (
         'yaqeen@gmail.com',
@@ -221,8 +221,13 @@ export const migrations: Migration[] = [
         'aseelaziz@gmail.com',
         'aseelmohammed@gmail.com',
         'yasmin@example.com',
-        'alzahraa@example.com'
+        'alzahraa@example.com',
+        'ali@example.com'
       );
+
+      -- Remove demo placeholders so patients can Sign Up themselves with their own passwords without 'Email already registered' error
+      DELETE FROM sessions WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali');
+      DELETE FROM users WHERE user_id IN ('usr_demo_yaqeen', 'usr_demo_layla', 'usr_demo_aseel', 'usr_demo_yasmin', 'usr_demo_ali');
     `,
   },
 ];
