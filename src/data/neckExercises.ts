@@ -19,6 +19,7 @@ export interface NeckExerciseResource {
   videoUrl: string;
   progression?: string;
   usesLaserBiofeedback?: boolean;
+  isOptional?: boolean;
 }
 
 export const NECK_EXERCISES: NeckExerciseResource[] = [
@@ -49,9 +50,10 @@ export const NECK_EXERCISES: NeckExerciseResource[] = [
     id: 'laser-proprioception',
     title: 'Cervical Proprioceptive Rehabilitation',
     category: 'Proprioceptive rehabilitation',
-    description: 'Proprioceptive rehabilitation resource using laser biofeedback.',
+    description: 'Proprioceptive rehabilitation resource using laser biofeedback (Optional supplementary exercise).',
     videoUrl: 'https://youtu.be/tbySm4GaEdU',
     usesLaserBiofeedback: true,
+    isOptional: true,
   },
   {
     id: 'tracking-1',

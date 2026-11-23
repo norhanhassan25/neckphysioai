@@ -65,9 +65,16 @@ export function PoseLibraryScreen() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: 18 }}>
           {exercises.map((exercise) => (
             <article key={exercise.id} className="plush" style={{ background: 'var(--surface)', padding: 22, display: 'flex', flexDirection: 'column', gap: 13, minHeight: 248 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
                 <span className="chip mint">{tr(exercise.category, cats[exercise.category] || exercise.category)}</span>
-                {exercise.usesLaserBiofeedback && <span className="chip sky">{tr('Laser biofeedback','تغذية راجعة بالليزر')}</span>}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {exercise.usesLaserBiofeedback && <span className="chip sky">{tr('Laser biofeedback','تغذية راجعة بالليزر')}</span>}
+                  {exercise.id === 'laser-proprioception' && (
+                    <span className="chip" style={{ background: 'var(--butter)', border: '2px solid var(--line)', fontWeight: 900 }}>
+                      {tr('Optional','اختياري')}
+                    </span>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 46, height: 46, borderRadius: 13, background: 'var(--sky)', border: '2px solid var(--line)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
@@ -78,7 +85,14 @@ export function PoseLibraryScreen() {
                   {exercise.progression && <span style={{ display: 'inline-block', marginTop: 6, color: 'var(--teal-deep)', fontSize: 12, fontWeight: 900 }}>{tr(exercise.progression, exercise.id.endsWith('2')?'المستوى المتقدم':'المستوى الأول')}</span>}
                 </div>
               </div>
-              <p style={{ color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.55, margin: 0, flex: 1 }}>{tr(exercise.description,descriptions[exercise.id]||exercise.description)}</p>
+              <p style={{ color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.55, margin: 0, flex: 1 }}>
+                {tr(exercise.description,descriptions[exercise.id]||exercise.description)}
+                {exercise.id === 'laser-proprioception' && (
+                  <span style={{ display: 'block', marginTop: 6, fontSize: 12, fontWeight: 800, color: 'var(--teal-deep)' }}>
+                    {tr('• Optional supplementary exercise: does not affect or block completion of standard sessions.', '• تمرين اختياري تكميلي: لا تتوقف الجلسة الكاملة عليه ولا يُشترط لاحتساب اكتمالها.')}
+                  </span>
+                )}
+              </p>
               <button type="button" className="btn-plush primary" onClick={() => {store.selectNeckExercise(exercise.id);store.setScreen('neck-video');}}>
                 <PlayCircle size={17}/> {tr(exercise.title,titles[exercise.id]||exercise.title)} — {tr('Video + AI','فيديو وتحليل ذكي')}
               </button>

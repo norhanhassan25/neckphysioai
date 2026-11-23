@@ -48,6 +48,11 @@ export function NeckVideoScreen() {
         {exercise ? (
           <>
             <h2>{language === 'ar' ? titles[exercise.id] || exercise.title : exercise.title}</h2>
+            {exercise.id === 'laser-proprioception' && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--butter)', border: '2px solid var(--line)', borderRadius: 20, padding: '4px 12px', fontWeight: 900, fontSize: 13, marginBottom: 10, color: 'var(--ink)' }}>
+                {tr('Optional / Supplementary Exercise — does not affect standard session completion', 'تمرين اختياري (تكميلي) — لا يُشترط لاحتساب الجلسة الكاملة')}
+              </div>
+            )}
             <p>
               {language === 'ar' ? genderize(TRACKER_CONFIGS[exercise.id]?.descriptionAr ?? '', gender) : exercise.description}
             </p>

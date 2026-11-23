@@ -24,7 +24,7 @@ export function ndiVideoPlan(score: number): string[] {
   if (score >= 70) return [];
   if (score >= 50) return ['cervical-isometric', 'deep-flexor-1'];
   if (score >= 30) return ['deep-flexor-1', 'cervical-isometric'];
-  if (score >= 10) return ['deep-flexor-2', 'laser-proprioception', 'tracking-1', 'tracking-2'];
+  if (score >= 10) return ['deep-flexor-2', 'tracking-1', 'tracking-2'];
   return ['deep-flexor-1', 'tracking-1'];
 }
 neckRouter.get('/exercises', asyncHandler(async (_req,res) => {
