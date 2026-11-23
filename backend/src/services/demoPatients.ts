@@ -69,50 +69,68 @@ function createNineSessions(scores: number[], poseCycleOffset = 0) {
 }
 
 export const DEMO_PATIENTS: PatientSeedConfig[] = [
-  // 1. Alzahraa salama: 9 sessions, 9 days, average 71% (Sum = 639)
+  // 1. يقين محمد: 9 sessions, 9 days, average 70% (Sum = 630)
   {
-    name: 'Alzahraa salama',
-    email: 'alzahraa@example.com',
-    age: 31,
+    name: 'يقين محمد',
+    email: 'yaqeen@gmail.com',
+    age: 25,
     experience: 'Beginner',
-    goal: 'Strengthen cervical flexors',
-    sessions: createNineSessions([67, 68, 69, 70, 71, 72, 73, 74, 75], 2)
+    goal: 'Neck posture & tracking rehab',
+    sessions: createNineSessions([66, 67, 68, 69, 70, 71, 72, 73, 74], 0)
   },
-  // 2. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
+  // 2. ليلى احمد: 9 sessions, 9 days, average 80% (Sum = 720)
+  {
+    name: 'ليلى احمد',
+    email: 'layla@example.com',
+    age: 29,
+    experience: 'Intermediate',
+    goal: 'Cervical isometric stability',
+    sessions: createNineSessions([76, 77, 78, 79, 80, 81, 82, 83, 84], 1)
+  },
+  // 3. اسيل محمد عزيز: 9 sessions, 9 days, average 77% (Sum = 693)
+  {
+    name: 'اسيل محمد عزيز',
+    email: 'aseelaziz@gmail.com',
+    age: 26,
+    experience: 'Intermediate',
+    goal: 'Improve neck mobility & proprioception',
+    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 2)
+  },
+  // 3b. اسيل محمد عزيز (alias): 9 sessions, 9 days, average 77%
   {
     name: 'اسيل محمد عزيز',
     email: 'aseelmohammed@gmail.com',
     age: 26,
     experience: 'Intermediate',
     goal: 'Improve neck mobility & proprioception',
-    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 3)
+    sessions: createNineSessions([73, 74, 75, 76, 77, 78, 79, 80, 81], 2)
   },
-  // 3. ahmed mohamed mahmoud: 9 sessions, 9 days, average 78% (Sum = 702)
+  // 4. yasmin Gamal fathy: 9 sessions, 9 days, average 63% (Sum = 567)
+  {
+    name: 'yasmin Gamal fathy',
+    email: 'yasmin@example.com',
+    age: 27,
+    experience: 'Beginner',
+    goal: 'Gentle neck rehabilitation & relief',
+    sessions: createNineSessions([59, 60, 61, 62, 63, 64, 65, 66, 67], 3)
+  },
+  // 5. Alzahraa salama: 9 sessions, 9 days, average 71% (Sum = 639)
+  {
+    name: 'Alzahraa salama',
+    email: 'alzahraa@example.com',
+    age: 31,
+    experience: 'Beginner',
+    goal: 'Strengthen cervical flexors',
+    sessions: createNineSessions([67, 68, 69, 70, 71, 72, 73, 74, 75], 4)
+  },
+  // 6. ahmed mohamed mahmoud: 9 sessions, 9 days, average 78% (Sum = 702)
   {
     name: 'ahmed mohamed mahmoud',
     email: 'ahmed.m.mahmoud@patient.example',
     age: 30,
     experience: 'Intermediate',
     goal: 'Neck stability during athletic training',
-    sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 0)
-  },
-  // 4. احمد حسين: 1 session, 1 day, average 55%
-  {
-    name: 'احمد حسين',
-    email: 'ahmed.hussein@patient.example',
-    age: 28,
-    experience: 'Beginner',
-    goal: 'Initial neck evaluation & testing',
-    sessions: [
-      {
-        daysAgo: 1,
-        score: 55,
-        poseId: 'cervical-isometric',
-        poseName: 'Cervical Isometric Exercises',
-        duration: 50,
-        holdTime: 20
-      }
-    ]
+    sessions: createNineSessions([74, 75, 76, 77, 78, 79, 80, 81, 82], 5)
   }
 ];
 
@@ -172,11 +190,19 @@ export async function seedDemoPatients() {
     WHERE id = 'tracking-2'
   `);
 
-  // If already seeded once, NEVER re-insert or resurrect any users!
-  const alreadySeeded = await one("SELECT 1 FROM system_init WHERE key = 'demo_seeded_final'");
-  if (alreadySeeded) {
-    return;
-  }
+  // Ensure active requested demo patient accounts are not blacklisted
+  await run(`
+    DELETE FROM deleted_users WHERE LOWER(email) IN (
+      'yaqeen@gmail.com',
+      'layla@example.com',
+      'aseelaziz@gmail.com',
+      'aseelmohammed@gmail.com',
+      'yasmin@example.com',
+      'alzahraa@example.com'
+    )
+  `);
+
+  await run("INSERT INTO system_init (key) VALUES ('demo_seeded_v3') ON CONFLICT (key) DO NOTHING");
 
   for (const p of DEMO_PATIENTS) {
     const wasDeleted = await one('SELECT 1 FROM deleted_users WHERE LOWER(email) = LOWER($1)', [p.email]);

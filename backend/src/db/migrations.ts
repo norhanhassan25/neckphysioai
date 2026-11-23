@@ -210,6 +210,21 @@ export const migrations: Migration[] = [
       WHERE id = 'tracking-2';
     `,
   },
+
+  {
+    id: 8,
+    name: 'whitelist_active_patient_accounts',
+    sql: `
+      DELETE FROM deleted_users WHERE LOWER(email) IN (
+        'yaqeen@gmail.com',
+        'layla@example.com',
+        'aseelaziz@gmail.com',
+        'aseelmohammed@gmail.com',
+        'yasmin@example.com',
+        'alzahraa@example.com'
+      );
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
