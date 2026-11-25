@@ -299,6 +299,16 @@ export const migrations: Migration[] = [
       DELETE FROM neck_assessments WHERE answers->'ndi' = '[1,2,1,2,1,1,2,1,2,1]'::jsonb;
     `,
   },
+
+  {
+    id: 15,
+    name: 'clear_layla_pre_assessment',
+    sql: `
+      DELETE FROM neck_assessments WHERE user_id IN (
+        SELECT user_id FROM users WHERE LOWER(email) = 'layla@example.com'
+      );
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
