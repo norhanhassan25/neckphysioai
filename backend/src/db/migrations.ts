@@ -281,6 +281,15 @@ export const migrations: Migration[] = [
       DELETE FROM deleted_users WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com', 'ziad.salah777@gmail.com');
     `,
   },
+
+  {
+    id: 13,
+    name: 'clear_auto_seeded_28_ndi_assessments',
+    sql: `
+      -- Remove auto-seeded 28% NDI assessments so patients can submit their own real Pre-assessment
+      DELETE FROM neck_assessments WHERE answers::text LIKE '%[1,2,1,2,1,1,2,1,2,1]%';
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time

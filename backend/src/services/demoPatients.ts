@@ -285,19 +285,6 @@ export async function seedDemoPatients() {
     if ((existingCount?.count ?? 0) === 0 || (existingCount?.count === p.sessions.length && existingAvg?.avg !== targetAvg)) {
       await run("DELETE FROM sessions WHERE user_id = $1", [userId]);
       await run("DELETE FROM neck_tracking_sessions WHERE user_id = $1", [userId]);
-      // Only insert an initial fallback NDI assessment if the patient hasn't filled one out themselves
-      const existingAssessment = await one<{ count: number }>("SELECT COUNT(*)::int AS count FROM neck_assessments WHERE user_id = $1", [userId]);
-      if ((existingAssessment?.count ?? 0) === 0) {
-        const ndiAnswers = {
-          ndi: [1, 2, 1, 2, 1, 1, 2, 1, 2, 1], // Mild neck disability
-          goals: p.goal
-        };
-        await run(
-          `INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
-           VALUES ($1, $2, 'eligible', 'deep-flexor-1', $3)`,
-          [userId, JSON.stringify(ndiAnswers), new Date(now - 10 * ONE_DAY_MS)]
-        );
-      }
 
       // Insert each session
       for (let i = 0; i < p.sessions.length; i++) {
