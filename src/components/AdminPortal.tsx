@@ -69,6 +69,17 @@ export function AdminPortal() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserModal, setSelectedUserModal] = useState<UserRow | null>(null);
+  const [selectedUserAssessments, setSelectedUserAssessments] = useState<any[]>([]);
+  useEffect(() => {
+    if (!selectedUserModal || selectedUserModal.role !== 'patient') {
+      setSelectedUserAssessments([]);
+      return;
+    }
+    apiFetch(`/api/neck/doctor/patients/${selectedUserModal.id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setSelectedUserAssessments(Array.isArray(d?.assessments) ? d.assessments : []))
+      .catch(() => setSelectedUserAssessments([]));
+  }, [selectedUserModal]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -1130,6 +1141,42 @@ export function AdminPortal() {
                   </div>
                 </div>
               </div>
+
+              {selectedUserModal.role === 'patient' && (() => {
+                const pre = selectedUserAssessments.find(a => a.assessmentType === 'pre');
+                const lastPost = selectedUserAssessments.find(a => a.isLastPost);
+                const posts = selectedUserAssessments.filter(a => a.assessmentType === 'post');
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: 'var(--paper)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>
+                      {tr('NDI Assessments', 'تقييمات الاستبيان (NDI)')}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      <div style={{ background: 'var(--cream)', padding: '8px 10px', borderRadius: 8, border: '1.5px solid var(--line)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)' }}>Pre-assessment</div>
+                        <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)' }}>
+                          {pre && pre.ndiPercent != null ? `${pre.ndiPercent}%` : tr('Not done', 'لم يتم')}
+                        </div>
+                      </div>
+                      <div style={{ background: lastPost ? 'var(--mint)' : 'var(--cream)', padding: '8px 10px', borderRadius: 8, border: '1.5px solid var(--line)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)' }}>Last Post-assessment</div>
+                        <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)' }}>
+                          {lastPost && lastPost.ndiPercent != null ? `${lastPost.ndiPercent}%` : tr('Not done', 'لم يتم')}
+                        </div>
+                      </div>
+                    </div>
+                    {posts.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                        {posts.map((p: any, idx: number) => (
+                          <span key={p.id} style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, border: '1.5px solid var(--line)', background: p.isLastPost ? 'var(--mint)' : 'var(--cream)' }}>
+                            {p.isLastPost ? 'Last Post-assessment' : `Post-assessment #${posts.length - idx}`}: {p.ndiPercent != null ? `${p.ndiPercent}%` : '—'}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {selectedUserModal.goal && (
                 <div style={{ background: 'var(--paper)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>

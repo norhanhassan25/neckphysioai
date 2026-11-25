@@ -27,8 +27,39 @@ export function ndiVideoPlan(score: number): string[] {
   if (score >= 10) return ['deep-flexor-2', 'tracking-1', 'tracking-2'];
   return ['deep-flexor-1', 'tracking-1'];
 }
+function computeNdiPercent(answers: z.infer<typeof answersSchema>): number | null {
+  const completed = answers?.ndi?.filter((v): v is number => v !== null) ?? [];
+  return completed.length >= 8
+    ? Math.round((completed.reduce((sum, v) => sum + v, 0) * 100) / (completed.length * 5) * 10) / 10
+    : null;
+}
+
+function formatAssessmentsWithLabels(rows: Array<{ id: number; answers: z.infer<typeof answersSchema>; status: string; exercise_id?: string | null; created_at: string }>) {
+  // rows are expected in chronological order (oldest first -> newest last)
+  const total = rows.length;
+  return rows.map((row, idx) => {
+    const isPre = idx === 0;
+    const isLastPost = total > 1 && idx === total - 1;
+    const label = isPre ? 'Pre-assessment' : isLastPost ? 'Last Post-assessment' : 'Post-assessment';
+    return {
+      ...row,
+      ndiPercent: computeNdiPercent(row.answers),
+      assessmentType: isPre ? 'pre' : 'post',
+      isLastPost,
+      label,
+    };
+  });
+}
+
 neckRouter.get('/exercises', asyncHandler(async (_req,res) => {
   res.json(await many('SELECT id, title, description, video_url AS "videoUrl", instructions,tracking_mode AS "trackingMode",exercise_group AS "exerciseGroup", plan_reps AS "planReps", plan_sets AS "planSets", plan_hold_seconds AS "planHoldSeconds", plan_rest_seconds AS "planRestSeconds" FROM neck_exercises WHERE active = TRUE ORDER BY title'));
+}));
+neckRouter.get('/assessments', requireRole('patient'), asyncHandler(async (req, res) => {
+  const rows = await many<{ id: number; answers: z.infer<typeof answersSchema>; status: string; exercise_id: string | null; created_at: string }>(
+    'SELECT id, answers, status, exercise_id, created_at FROM neck_assessments WHERE user_id = $1 ORDER BY id ASC LIMIT 50',
+    [req.auth.id]
+  );
+  res.json(formatAssessmentsWithLabels(rows));
 }));
 neckRouter.get('/assessment/latest', requireRole('patient'), asyncHandler(async (req,res) => {
   const row = await one<{id:number; answers:z.infer<typeof answersSchema>; status:string; exerciseId:string|null; createdAt:string}>('SELECT id, answers, status, exercise_id AS "exerciseId", created_at AS "createdAt" FROM neck_assessments WHERE user_id = $1 ORDER BY id DESC LIMIT 1',[req.auth.id]);
@@ -80,10 +111,11 @@ neckRouter.post('/sessions', requireRole('patient'), asyncHandler(async(req,res)
 }));
 neckRouter.get('/doctor/patients/:id', requireRole('doctor','admin'), asyncHandler(async(req,res) => {
   if (!(await users.canViewUser(req.auth,req.params.id))) throw notFound('Patient not found');
-  const [assessments,sessions]=await Promise.all([
-    many('SELECT * FROM neck_assessments WHERE user_id=$1 ORDER BY id DESC LIMIT 30',[req.params.id]),
+  const [rawAssessments,sessions]=await Promise.all([
+    many<{ id: number; answers: z.infer<typeof answersSchema>; status: string; exercise_id: string | null; created_at: string }>('SELECT * FROM neck_assessments WHERE user_id=$1 ORDER BY id ASC LIMIT 50',[req.params.id]),
     many('SELECT * FROM neck_tracking_sessions WHERE user_id=$1 ORDER BY id DESC LIMIT 30',[req.params.id])
   ]);
+  const assessments = formatAssessmentsWithLabels(rawAssessments).reverse();
   res.json({assessments,sessions});
 }));
 neckRouter.get('/doctor/exercises', requireRole('doctor','admin'), asyncHandler(async(_req,res) => {

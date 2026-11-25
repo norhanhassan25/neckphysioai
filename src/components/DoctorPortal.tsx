@@ -277,6 +277,27 @@ export function DoctorPortal() {
       {selectedPatient && neckDetails && <section className="plush" style={{maxWidth:1100,width:'95%',margin:'10px auto',padding:18,background:'var(--surface)'}}>
         <h3>{tr('Neck assessments and camera sessions:','استبيانات الرقبة وجلسات الكاميرا:')} {selectedPatient.name}</h3>
         <p>{tr('Assessments:','الاستبيانات:')} {neckDetails.assessments?.length||0} | {tr('Tracking sessions:','جلسات التتبع:')} {neckDetails.sessions?.length||0}</p>
+        {(() => {
+          const list: any[] = neckDetails.assessments || [];
+          const pre = list.find(a => a.assessmentType === 'pre');
+          const lastPost = list.find(a => a.isLastPost);
+          const posts = list.filter(a => a.assessmentType === 'post');
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+              <span className="chip" style={{ border: '2px solid var(--line)', background: 'var(--cream)', fontWeight: 900 }}>
+                Pre-assessment: {pre && pre.ndiPercent != null ? `${pre.ndiPercent}%` : tr('Not done', 'لم يتم')}
+              </span>
+              <span className="chip" style={{ border: '2px solid var(--line)', background: lastPost ? 'var(--mint)' : 'var(--cream)', fontWeight: 900 }}>
+                Last Post-assessment: {lastPost && lastPost.ndiPercent != null ? `${lastPost.ndiPercent}%` : tr('Not done', 'لم يتم')}
+              </span>
+              {posts.map((p: any, idx: number) => (
+                <span key={p.id} className="chip" style={{ border: '2px solid var(--line)', background: p.isLastPost ? 'var(--mint)' : 'var(--paper)', fontWeight: 800 }}>
+                  {p.isLastPost ? 'Last Post-assessment' : `Post-assessment #${posts.length - idx}`}: {p.ndiPercent != null ? `${p.ndiPercent}%` : '—'}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
           <thead><tr>{[tr('Timing / Days','التوقيت / الأيام'),tr('Exercise','التمرين'),tr('Reps','التكرارات'),tr('Sets','المجموعات'),tr('Match %','التطابق %'),tr('Pain before→after','الألم قبل←بعد'),tr('Plan done','الخطة'),tr('Flags','تنبيهات')].map(h=><th key={h} style={{textAlign:'start',borderBottom:'1px solid #ccc',padding:4}}>{h}</th>)}</tr></thead>
           <tbody>{(neckDetails.sessions||[]).map((x:any,xi:number)=>{

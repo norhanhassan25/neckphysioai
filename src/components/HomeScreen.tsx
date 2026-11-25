@@ -35,6 +35,7 @@ import {
 } from 'recharts';
 import { askCoachQuestion } from '../utils/geminiService';
 import { useLanguage } from '../i18n/LanguageContext';
+import { apiFetch } from '../utils/api';
 
 function relativeDate(ms: number, isArabic = false): string {
   const diffMs = Date.now() - ms;
@@ -148,6 +149,15 @@ export function HomeScreen() {
   
   const activeTab = useActiveTab();
   const setActiveTab = (tab: 'dashboard' | 'trends' | 'consult') => store.setActiveTab(tab);
+
+  const [ndiAssessments, setNdiAssessments] = useState<Array<{ id: number; ndiPercent: number | null; label: string; assessmentType: string; isLastPost: boolean; created_at: string }>>([]);
+  useEffect(() => {
+    if (!userId) return;
+    apiFetch('/api/neck/assessments')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows) => { if (Array.isArray(rows)) setNdiAssessments(rows); })
+      .catch(() => {});
+  }, [userId]);
 
   const [painLevel, setPainLevel] = useState<number>(3);
   const [loggedPain, setLoggedPain] = useState<boolean>(() => {
@@ -542,6 +552,52 @@ export function HomeScreen() {
               <StatCard title={tr('Average Score','متوسط التقييم')} value={`${avgScore}%`} icon={<Award size={20} color="var(--ink)" />} color="var(--butter)" />
               <StatCard title={tr('Attention Area','مجال يحتاج الانتباه')} value={language==='ar' && weakestArea==='None'?'لا يوجد':weakestArea} icon={<Doodle kind="star" size={20} color="var(--ink)" />} color="var(--rose)" />
             </div>
+
+            {(() => {
+              const pre = ndiAssessments.find(a => a.assessmentType === 'pre');
+              const lastPost = ndiAssessments.find(a => a.isLastPost);
+              const posts = ndiAssessments.filter(a => a.assessmentType === 'post');
+              return (
+                <div className="plush" style={{ padding: '20px 24px', background: 'var(--surface)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, borderBottom: '2.5px solid var(--line)', paddingBottom: 10 }}>
+                    <h2 style={{ fontSize: 20, color: 'var(--ink)', margin: 0 }}>
+                      {tr('Neck Disability Assessments (NDI)', 'تقييمات حالة الرقبة (الاستبيان)')}
+                    </h2>
+                    <button
+                      onClick={() => store.setScreen('neck-assessment')}
+                      className="btn-plush primary"
+                      style={{ fontSize: 13, padding: '6px 14px', height: 'auto' }}
+                    >
+                      {pre ? tr('Fill Post-assessment', 'ملء استبيان جديد (Post-assessment)') : tr('Fill Pre-assessment', 'ملء الاستبيان الأول (Pre-assessment)')}
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                    <div style={{ background: 'var(--cream)', padding: 14, borderRadius: 12, border: '2px solid var(--line)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--ink-soft)' }}>Pre-assessment</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--ink)', marginTop: 4 }}>
+                        {pre && pre.ndiPercent !== null ? `${pre.ndiPercent}%` : tr('Not done yet', 'لم يتم بعد')}
+                      </div>
+                    </div>
+                    <div style={{ background: lastPost ? 'var(--mint)' : 'var(--cream)', padding: 14, borderRadius: 12, border: '2px solid var(--line)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--ink-soft)' }}>Last Post-assessment</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--ink)', marginTop: 4 }}>
+                        {lastPost && lastPost.ndiPercent !== null ? `${lastPost.ndiPercent}%` : tr('Not done yet', 'لم يتم بعد')}
+                      </div>
+                    </div>
+                  </div>
+                  {posts.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink-soft)' }}>{tr('All Post-assessments:', 'كل التقييمات البعدية:')}</span>
+                      {posts.map((p, idx) => (
+                        <span key={p.id} className="chip" style={{ border: '2px solid var(--line)', fontSize: 12, fontWeight: 800, background: p.isLastPost ? 'var(--mint)' : 'var(--paper)' }}>
+                          {p.isLastPost ? 'Last Post-assessment' : `Post-assessment #${idx + 1}`}: {p.ndiPercent !== null ? `${p.ndiPercent}%` : '—'}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
 
             {(() => {
