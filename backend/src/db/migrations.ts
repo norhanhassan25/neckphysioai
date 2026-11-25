@@ -290,6 +290,15 @@ export const migrations: Migration[] = [
       DELETE FROM neck_assessments WHERE answers::text LIKE '%[1,2,1,2,1,1,2,1,2,1]%';
     `,
   },
+
+  {
+    id: 14,
+    name: 'clear_auto_seeded_28_ndi_assessments_jsonb',
+    sql: `
+      -- Match JSONB array regardless of whitespace formatting
+      DELETE FROM neck_assessments WHERE answers->'ndi' = '[1,2,1,2,1,1,2,1,2,1]'::jsonb;
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
