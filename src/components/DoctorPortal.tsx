@@ -586,6 +586,44 @@ export function DoctorPortal() {
             </div>
 
             {(() => {
+              const list: any[] = neckDetails?.assessments || [];
+              const pre = list.find(a => a.assessmentType === 'pre');
+              const lastPost = list.find(a => a.isLastPost);
+              const posts = list.filter(a => a.assessmentType === 'post');
+              return (
+                <div className="plush" style={{ background: 'var(--surface)', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--ink)' }}>
+                    {tr('Neck Disability Assessments (NDI)', 'تقييمات حالة الرقبة (الاستبيان)')}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div style={{ background: 'var(--cream)', padding: '10px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)' }}>Pre-assessment</div>
+                      <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--ink)', marginTop: 2 }}>
+                        {pre && pre.ndiPercent != null ? `${pre.ndiPercent}%` : tr('Not done yet', 'لم يتم بعد')}
+                      </div>
+                    </div>
+                    <div style={{ background: lastPost ? 'var(--mint)' : 'var(--cream)', padding: '10px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)' }}>Last Post-assessment</div>
+                      <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--ink)', marginTop: 2 }}>
+                        {lastPost && lastPost.ndiPercent != null ? `${lastPost.ndiPercent}%` : tr('Not done yet', 'لم يتم بعد')}
+                      </div>
+                    </div>
+                  </div>
+                  {posts.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--ink-soft)' }}>{tr('All Post-assessments:', 'كل التقييمات البعدية:')}</span>
+                      {posts.map((p: any, idx: number) => (
+                        <span key={p.id} className="chip" style={{ border: '2px solid var(--line)', fontSize: 12, fontWeight: 800, background: p.isLastPost ? 'var(--mint)' : 'var(--paper)' }}>
+                          {p.isLastPost ? 'Last Post-assessment' : `Post-assessment #${posts.length - idx}`}: {p.ndiPercent != null ? `${p.ndiPercent}%` : '—'}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {(() => {
               const currentCarePlan = selectedPatient.carePlan ?? [];
               return (
                 <div className="plush" style={{ background: 'var(--surface)', padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
