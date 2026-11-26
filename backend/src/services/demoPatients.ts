@@ -54,6 +54,9 @@ function gradeForScore(score: number): string {
 }
 
 function createNineSessions(scores: number[], poseCycleOffset = 0) {
+  // Realistic clinical session duration: 12 to 15 minutes (720s to 900s)
+  const durations = [760, 810, 840, 780, 890, 820, 850, 790, 870]; // 12m40s to 14m50s
+  const holdTimes = [420, 480, 510, 450, 540, 490, 520, 460, 530]; // 7m to 9m hold
   return scores.map((score, index) => {
     const daysAgo = 9 - index; // from 9 days ago up to 1 day ago
     const ex = EXERCISES[(index + poseCycleOffset) % EXERCISES.length];
@@ -62,8 +65,8 @@ function createNineSessions(scores: number[], poseCycleOffset = 0) {
       score,
       poseId: ex.id,
       poseName: ex.name,
-      duration: 60 + (index % 4) * 15,
-      holdTime: 30 + (index % 3) * 10
+      duration: durations[index % durations.length],
+      holdTime: holdTimes[index % holdTimes.length]
     };
   });
 }

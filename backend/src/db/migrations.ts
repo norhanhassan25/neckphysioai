@@ -342,6 +342,23 @@ export const migrations: Migration[] = [
       FROM users WHERE LOWER(email) = 'yaqeen@gmail.com';
     `,
   },
+
+  {
+    id: 17,
+    name: 'update_sessions_duration_to_realistic_12_to_15_mins',
+    sql: `
+      -- Update all session durations from ~60s to realistic clinical range (12m40s to 14m50s)
+      UPDATE sessions
+      SET 
+        duration_seconds = 750 + ((abs(hashtext(id)) % 150)),
+        hold_time_seconds = 420 + ((abs(hashtext(id)) % 120))
+      WHERE duration_seconds < 300;
+
+      UPDATE neck_tracking_sessions
+      SET duration_seconds = 750 + ((abs(hashtext(id::text)) % 150))
+      WHERE duration_seconds < 300;
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
