@@ -42,12 +42,12 @@ export function createApp() {
     app.use(express.json({ limit: '64kb' }));
   } else {
     app.use((req, _res, next) => {
-      if (typeof req.body === 'string' && req.body.length > 0) {
-        try {
+      try {
+        if (typeof req.body === 'string' && req.body.length > 0) {
           req.body = JSON.parse(req.body);
-        } catch {
-          // invalid json handled by router
         }
+      } catch {
+        // invalid json ignored
       }
       next();
     });
