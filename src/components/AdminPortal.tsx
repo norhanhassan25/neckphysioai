@@ -22,7 +22,8 @@ import {
   Award,
   Flame,
   Heart,
-  Plus
+  Plus,
+  Calendar
 } from 'lucide-react';
 
 interface SystemStats {
