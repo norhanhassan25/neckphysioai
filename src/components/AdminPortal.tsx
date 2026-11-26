@@ -4,6 +4,7 @@ import { apiFetch } from '../utils/api';
 import { store, useUserData } from '../game/store';
 import { TopBar } from './primitives';
 import { useLanguage } from '../i18n/LanguageContext';
+import { exportPatientWordReport } from '../utils/exportWordReport';
 import { 
   Shield, 
   Database, 
@@ -1202,7 +1203,24 @@ export function AdminPortal() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 4 }}>
+                {selectedUserModal.role === 'patient' && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      exportPatientWordReport({
+                        patient: selectedUserModal,
+                        assessments: selectedUserAssessments,
+                        sessions: [],
+                        doctorName: adminData?.name || 'Admin',
+                      })
+                    }
+                    className="btn-plush ghost tap"
+                    style={{ padding: '8px 16px', fontSize: 13 }}
+                  >
+                    {tr('Download PDF Report', 'تحميل تقرير المريض (PDF)')}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setSelectedUserModal(null)}

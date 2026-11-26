@@ -6,6 +6,7 @@ import { CarePlanItem, SessionData, UserData } from '../game/types';
 import { TopBar } from './primitives';
 import { POSES } from '../data/poses';
 import { NECK_EXERCISES } from '../data/neckExercises';
+import { exportPatientWordReport } from '../utils/exportWordReport';
 import { 
   Users, 
   TrendingUp, 
@@ -544,7 +545,39 @@ export function DoctorPortal() {
                   Access Profile: {selectedPatient.email} • {selectedPatient.age} years old
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() =>
+                    exportPatientWordReport({
+                      patient: selectedPatient,
+                      assessments: neckDetails?.assessments || [],
+                      sessions: dailyPatientHistory.map((s, idx) => ({
+                        dayNumber: dailyPatientHistory.length - idx,
+                        displayName: s.displayName,
+                        durationSeconds: s.durationSeconds,
+                        holdTimeSeconds: s.holdTimeSeconds,
+                        averageScore: s.averageScore,
+                        grade: s.grade,
+                        isFullSession: s.isFullSession,
+                      })),
+                      doctorName: doctorData?.name,
+                      aiReport: aiReport || undefined,
+                    })
+                  }
+                  className="tap btn-plush primary"
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    borderRadius: 'var(--r-sm)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    boxShadow: '2px 2px 0 var(--line)'
+                  }}
+                  title={tr('Download full patient report as PDF', 'تحميل ملف المريض الكامل (PDF)')}
+                >
+                  <Download size={14} /> {tr('PDF Report', 'تقرير PDF')}
+                </button>
                 <button
                   onClick={() => handleExportCSV(selectedPatient.name, patientHistory)}
                   className="tap btn-plush ghost"
