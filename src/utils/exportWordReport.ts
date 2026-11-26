@@ -61,84 +61,78 @@ export function exportPatientWordReport(params: {
             const statusText = s.isFullSession ? 'Full Session ✓' : 'Recorded';
             return `
               <tr>
-                <td>Day ${dayNum}</td>
-                <td>${title}</td>
-                <td>${statusText}</td>
-                <td>${formatDuration(s.durationSeconds)}</td>
-                <td>${formatDuration(s.holdTimeSeconds)}</td>
-                <td><b>${s.averageScore}%</b></td>
-                <td>${s.grade}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">Day ${dayNum}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">${title}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">${statusText}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">${formatDuration(s.durationSeconds)}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">${formatDuration(s.holdTimeSeconds)}</td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>${s.averageScore}%</b></td>
+                <td style="border:1px solid #cbd5e1;padding:8px 10px;">${s.grade}</td>
               </tr>
             `;
           })
           .join('')
-      : `<tr><td colspan="7" style="text-align:center;color:#666;">No training sessions recorded yet.</td></tr>`;
+      : `<tr><td colspan="7" style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center;color:#666;">No training sessions recorded yet.</td></tr>`;
 
   const html = `
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:w="urn:schemas-microsoft-com:office:word"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-  <meta charset="utf-8" />
-  <title>NeckPhysioAI Medical Report - ${patient.name}</title>
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; line-height: 1.5; padding: 24px; }
-    .header { border-bottom: 3px solid #0f766e; padding-bottom: 12px; margin-bottom: 20px; }
-    .title { font-size: 22px; font-weight: bold; color: #0f766e; margin: 0; }
-    .subtitle { font-size: 13px; color: #475569; margin: 4px 0 0; }
-    h2 { font-size: 16px; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-top: 22px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-    th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
-    th { background-color: #f1f5f9; font-weight: bold; color: #0f172a; }
-    .info-grid td { width: 50%; }
-    .summary-box { background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; margin-top: 10px; }
-    .footer { margin-top: 32px; border-top: 1px dashed #94a3b8; padding-top: 12px; font-size: 12px; color: #475569; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <p class="title">NeckPhysioAI — Patient Medical Rehabilitation Report</p>
-    <p class="subtitle">Generated on ${new Date().toLocaleDateString()} | Supervising Clinician: ${doctorName || 'Physiotherapist'}</p>
+<div style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.5;padding:20px;background:#ffffff;width:100%;box-sizing:border-box;">
+  <div style="border-bottom:3px solid #0f766e;padding-bottom:12px;margin-bottom:20px;">
+    <p style="font-size:20px;font-weight:bold;color:#0f766e;margin:0;">NeckPhysioAI — Patient Medical Rehabilitation Report</p>
+    <p style="font-size:12px;color:#475569;margin:4px 0 0;">Generated on ${new Date().toLocaleDateString()} | Supervising Clinician: ${doctorName || 'Physiotherapist'}</p>
   </div>
 
-  <h2>1. Patient Profile</h2>
-  <table class="info-grid">
-    <tr><td><b>Full Name:</b> ${patient.name}</td><td><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
-    <tr><td><b>Age:</b> ${patient.age ? `${patient.age} years` : '—'}</td><td><b>Experience Level:</b> ${patient.experience || 'Beginner'}</td></tr>
-    <tr><td><b>Days Practiced:</b> ${patient.sessionCount ?? sessions.length} Days</td><td><b>Sessions:</b> ${patient.sessionCount ?? sessions.length}</td></tr>
-    <tr><td><b>Average Score:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td><td><b>Email:</b> ${patient.email || '—'}</td></tr>
-    <tr><td colspan="2"><b>Rehabilitation & Wellness Goal:</b> ${patient.goal || 'Neck Rehabilitation'}</td></tr>
+  <h2 style="font-size:15px;color:#0f766e;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin-top:18px;">1. Patient Profile</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;">
+    <tr>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;width:50%;"><b>Full Name:</b> ${patient.name}</td>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;width:50%;"><b>Date:</b> ${new Date().toLocaleDateString()}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Age:</b> ${patient.age ? `${patient.age} years` : '—'}</td>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Experience Level:</b> ${patient.experience || 'Beginner'}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Days Practiced:</b> ${patient.sessionCount ?? sessions.length} Days</td>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Sessions:</b> ${patient.sessionCount ?? sessions.length}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Average Score:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td>
+      <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Email:</b> ${patient.email || '—'}</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #cbd5e1;padding:8px 10px;"><b>Rehabilitation & Wellness Goal:</b> ${patient.goal || 'Neck Rehabilitation'}</td>
+    </tr>
   </table>
 
-  <h2>2. Neck Disability Assessments (NDI)</h2>
-  <table>
+  <h2 style="font-size:15px;color:#0f766e;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin-top:18px;">2. Neck Disability Assessments (NDI)</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;">
     <thead>
       <tr>
-        <th>Pre-Assessment</th>
-        <th>Last Post-Assessment</th>
-        <th>Clinical Improvement</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Pre-Assessment</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Last Post-Assessment</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Clinical Improvement</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><b>${preScore}</b></td>
-        <td><b>${postScore}</b></td>
-        <td><b>${improvement}</b></td>
+        <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>${preScore}</b></td>
+        <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>${postScore}</b></td>
+        <td style="border:1px solid #cbd5e1;padding:8px 10px;"><b>${improvement}</b></td>
       </tr>
     </tbody>
   </table>
 
-  <h2>3. Workout Practice Records</h2>
-  <table>
+  <h2 style="font-size:15px;color:#0f766e;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin-top:18px;">3. Workout Practice Records</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;">
     <thead>
       <tr>
-        <th>Day</th>
-        <th>Exercise / Session</th>
-        <th>Status</th>
-        <th>Total Time</th>
-        <th>Hold Time</th>
-        <th>ROM Score</th>
-        <th>Grade</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Day</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Exercise / Session</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Status</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Total Time</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Hold Time</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">ROM Score</th>
+        <th style="border:1px solid #cbd5e1;padding:8px 10px;background-color:#f1f5f9;text-align:left;">Grade</th>
       </tr>
     </thead>
     <tbody>
@@ -148,16 +142,15 @@ export function exportPatientWordReport(params: {
 
   ${
     aiReport
-      ? `<h2>4. Clinical Notes & AI Summary</h2><div class="summary-box">${aiReport.replace(/\n/g, '<br/>')}</div>`
+      ? `<h2 style="font-size:15px;color:#0f766e;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin-top:18px;">4. Clinical Notes & AI Summary</h2><div style="background-color:#f8fafc;border:1px solid #cbd5e1;padding:12px;margin-top:8px;font-size:12px;">${aiReport.replace(/\n/g, '<br/>')}</div>`
       : ''
   }
 
-  <div class="footer">
+  <div style="margin-top:28px;border-top:1px dashed #94a3b8;padding-top:12px;font-size:12px;color:#475569;">
     <p><b>Clinician Signature:</b> _______________________________ &nbsp;&nbsp;&nbsp; <b>Date:</b> _______________</p>
     <p>NeckPhysioAI Smart Cervical Rehabilitation System</p>
   </div>
-</body>
-</html>`;
+</div>`;
 
   const fileName = `NeckPhysioAI_Report_${patient.name.replace(/\s+/g, '_')}.pdf`;
 
