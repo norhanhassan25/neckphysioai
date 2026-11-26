@@ -158,16 +158,47 @@ export function exportPatientWordReport(params: {
 </body>
 </html>`;
 
-  const printWin = window.open('', '_blank', 'width=900,height=700');
-  if (printWin) {
-    printWin.document.open();
-    printWin.document.write(html);
-    printWin.document.close();
-    printWin.focus();
-    setTimeout(() => {
-      printWin.print();
-    }, 300);
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.left = '-9999px';
+  container.style.top = '0';
+  container.style.width = '794px';
+  container.style.background = '#ffffff';
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  const fileName = `NeckPhysioAI_Report_${patient.name.replace(/\s+/g, '_')}.pdf`;
+
+  const runHtml2Pdf = () => {
+    const html2pdf = (window as any).html2pdf;
+    html2pdf()
+      .set({
+        margin: 10,
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      })
+      .from(container)
+      .save()
+      .then(() => {
+        document.body.removeChild(container);
+      })
+      .catch(() => {
+        document.body.removeChild(container);
+      });
+  };
+
+  if ((window as any).html2pdf) {
+    runHtml2Pdf();
   } else {
-    alert('Please allow popups to download/print the PDF report.');
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    script.onload = runHtml2Pdf;
+    script.onerror = () => {
+      document.body.removeChild(container);
+      alert('Failed to load PDF generator. Please check your internet connection.');
+    };
+    document.head.appendChild(script);
   }
 }
