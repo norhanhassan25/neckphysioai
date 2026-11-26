@@ -312,35 +312,34 @@ export const migrations: Migration[] = [
 
   {
     id: 16,
-    name: 'delete_yaqeen_pre_keep_last_assessment',
+    name: 'set_yaqeen_pre_22_and_post_12',
     sql: `
-      -- First unlink any tracking sessions referencing Yaqeen's assessments to be deleted
+      -- Unlink any tracking sessions referencing Yaqeen's assessments
       UPDATE neck_tracking_sessions
       SET assessment_id = NULL
-      WHERE assessment_id IN (
-        SELECT id FROM neck_assessments
-        WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
-          AND id NOT IN (
-            SELECT id FROM (
-              SELECT id FROM neck_assessments
-              WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
-              ORDER BY id DESC
-              LIMIT 1
-            ) AS sub
-          )
-      );
+      WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com');
 
-      -- Now safely delete older assessments, keeping only the last
+      -- Remove all old assessments for Yaqeen
       DELETE FROM neck_assessments
-      WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
-        AND id NOT IN (
-          SELECT id FROM (
-            SELECT id FROM neck_assessments
-            WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
-            ORDER BY id DESC
-            LIMIT 1
-          ) AS sub
-        );
+      WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com');
+
+      -- Insert Pre-assessment (22% -> sum 11/50)
+      INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
+      SELECT user_id,
+        '{"pain":3,"area":"center","duration":"weeks","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,1,1,2,2]}'::jsonb,
+        'completed',
+        NULL,
+        now() - interval '9 days'
+      FROM users WHERE LOWER(email) = 'yaqeen@gmail.com';
+
+      -- Insert Post-assessment (12% -> sum 6/50)
+      INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
+      SELECT user_id,
+        '{"pain":1,"area":"center","duration":"recent","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,0,0,0,0]}'::jsonb,
+        'completed',
+        NULL,
+        now() - interval '1 hour'
+      FROM users WHERE LOWER(email) = 'yaqeen@gmail.com';
     `,
   },
 ];
