@@ -327,7 +327,7 @@ export const migrations: Migration[] = [
       INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
       SELECT user_id,
         '{"pain":3,"area":"center","duration":"weeks","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,1,1,2,2]}'::jsonb,
-        'completed',
+        'eligible',
         NULL,
         now() - interval '9 days'
       FROM users WHERE LOWER(email) = 'yaqeen@gmail.com';
@@ -336,7 +336,7 @@ export const migrations: Migration[] = [
       INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
       SELECT user_id,
         '{"pain":1,"area":"center","duration":"recent","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,0,0,0,0]}'::jsonb,
-        'completed',
+        'eligible',
         NULL,
         now() - interval '1 hour'
       FROM users WHERE LOWER(email) = 'yaqeen@gmail.com';
