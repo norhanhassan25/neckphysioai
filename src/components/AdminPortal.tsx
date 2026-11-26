@@ -72,15 +72,21 @@ export function AdminPortal() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserModal, setSelectedUserModal] = useState<UserRow | null>(null);
   const [selectedUserAssessments, setSelectedUserAssessments] = useState<any[]>([]);
+  const [selectedUserSessions, setSelectedUserSessions] = useState<any[]>([]);
   useEffect(() => {
     if (!selectedUserModal || selectedUserModal.role !== 'patient') {
       setSelectedUserAssessments([]);
+      setSelectedUserSessions([]);
       return;
     }
     apiFetch(`/api/neck/doctor/patients/${selectedUserModal.id}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setSelectedUserAssessments(Array.isArray(d?.assessments) ? d.assessments : []))
       .catch(() => setSelectedUserAssessments([]));
+    apiFetch(`/api/doctor/patients/${selectedUserModal.id}/sessions`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows) => setSelectedUserSessions(Array.isArray(rows) ? rows : []))
+      .catch(() => setSelectedUserSessions([]));
   }, [selectedUserModal]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1211,7 +1217,15 @@ export function AdminPortal() {
                       exportPatientWordReport({
                         patient: selectedUserModal,
                         assessments: selectedUserAssessments,
-                        sessions: [],
+                        sessions: selectedUserSessions.map((s: any, idx: number) => ({
+                          dayNumber: selectedUserSessions.length - idx,
+                          displayName: s.poseName,
+                          durationSeconds: s.durationSeconds,
+                          holdTimeSeconds: s.holdTimeSeconds,
+                          averageScore: s.averageScore,
+                          grade: s.grade,
+                          isFullSession: true,
+                        })),
                         doctorName: adminData?.name || 'Admin',
                       })
                     }
