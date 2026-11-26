@@ -103,13 +103,14 @@ export function exportPatientWordReport(params: {
 
   <h2>1. Patient Profile</h2>
   <table class="info-grid">
-    <tr><td><b>Full Name:</b> ${patient.name}</td><td><b>Email:</b> ${patient.email || '—'}</td></tr>
+    <tr><td><b>Full Name:</b> ${patient.name}</td><td><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
     <tr><td><b>Age:</b> ${patient.age ? `${patient.age} years` : '—'}</td><td><b>Experience Level:</b> ${patient.experience || 'Beginner'}</td></tr>
-    <tr><td><b>Rehabilitation Goal:</b> ${patient.goal || 'Neck Rehabilitation'}</td><td><b>Total Days / Sessions:</b> ${patient.sessionCount ?? sessions.length} Days</td></tr>
-    <tr><td colspan="2"><b>Average ROM Rating:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td></tr>
+    <tr><td><b>Days Practiced:</b> ${patient.sessionCount ?? sessions.length} Days</td><td><b>Sessions:</b> ${patient.sessionCount ?? sessions.length}</td></tr>
+    <tr><td><b>Average Score:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td><td><b>Email:</b> ${patient.email || '—'}</td></tr>
+    <tr><td colspan="2"><b>Rehabilitation & Wellness Goal:</b> ${patient.goal || 'Neck Rehabilitation'}</td></tr>
   </table>
 
-  <h2>2. Neck Disability Index (NDI) Assessments</h2>
+  <h2>2. Neck Disability Assessments (NDI)</h2>
   <table>
     <thead>
       <tr>
@@ -127,7 +128,7 @@ export function exportPatientWordReport(params: {
     </tbody>
   </table>
 
-  <h2>3. Daily Camera Rehabilitation Sessions</h2>
+  <h2>3. Workout Practice Records</h2>
   <table>
     <thead>
       <tr>
