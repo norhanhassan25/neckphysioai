@@ -9,6 +9,7 @@ import {
   Award,
   Flame,
   Activity,
+  Calendar,
   Trash2,
   Plus,
   ChevronRight,
