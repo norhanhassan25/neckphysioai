@@ -314,6 +314,23 @@ export const migrations: Migration[] = [
     id: 16,
     name: 'delete_yaqeen_pre_keep_last_assessment',
     sql: `
+      -- First unlink any tracking sessions referencing Yaqeen's assessments to be deleted
+      UPDATE neck_tracking_sessions
+      SET assessment_id = NULL
+      WHERE assessment_id IN (
+        SELECT id FROM neck_assessments
+        WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
+          AND id NOT IN (
+            SELECT id FROM (
+              SELECT id FROM neck_assessments
+              WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
+              ORDER BY id DESC
+              LIMIT 1
+            ) AS sub
+          )
+      );
+
+      -- Now safely delete older assessments, keeping only the last
       DELETE FROM neck_assessments
       WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
         AND id NOT IN (
