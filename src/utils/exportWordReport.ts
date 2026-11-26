@@ -96,8 +96,7 @@ export function exportPatientWordReport(params: {
       <td style="border:1px solid #cbd5e1;padding:4px 6px;"><b>Sessions:</b> ${patient.sessionCount ?? sessions.length}</td>
     </tr>
     <tr>
-      <td style="border:1px solid #cbd5e1;padding:4px 6px;"><b>Average Score:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td>
-      <td style="border:1px solid #cbd5e1;padding:4px 6px;"><b>Email:</b> ${patient.email || '—'}</td>
+      <td colspan="2" style="border:1px solid #cbd5e1;padding:4px 6px;"><b>Average Score:</b> ${patient.avgScore != null ? `${patient.avgScore}%` : 'N/A'}</td>
     </tr>
     <tr>
       <td colspan="2" style="border:1px solid #cbd5e1;padding:4px 6px;"><b>Rehabilitation & Wellness Goal:</b> ${patient.goal || 'Neck Rehabilitation'}</td>
