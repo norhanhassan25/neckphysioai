@@ -751,8 +751,6 @@ export function HomeScreen() {
                               </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: 'var(--ink-soft)', fontWeight: 700 }}>
-                              <span>{relativeDate(session.date, language === 'ar')}</span>
-                              <span>•</span>
                               <span>Hold: {session.holdTimeSeconds}s</span>
                               <span>•</span>
                               <span>Score: {session.averageScore}%</span>
