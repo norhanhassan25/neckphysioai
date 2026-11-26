@@ -546,10 +546,11 @@ export function HomeScreen() {
         {activeTab === 'dashboard' && (
           <div className="popin" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+              <StatCard title={tr('Days Practiced','عدد الأيام')} value={`${dailySessions.length} ${language==='ar'?'أيام':'days'}`} icon={<Calendar size={20} color="var(--ink)" />} color="var(--sky)" />
               <StatCard title={tr('Daily Streak','أيام الاستمرار')} value={`${streak} ${language==='ar'?'يوم':'days'}`} icon={<Flame size={20} color="var(--ink)" />} color="var(--peach)" />
-              <StatCard title={tr('Sessions Practiced','الجلسات المنفذة')} value={count} icon={<Activity size={20} color="var(--ink)" />} color="var(--sky)" />
-              <StatCard title={tr('Average Score','متوسط التقييم')} value={`${avgScore}%`} icon={<Award size={20} color="var(--ink)" />} color="var(--butter)" />
+              <StatCard title={tr('Sessions Practiced','الجلسات المنفذة')} value={count} icon={<Activity size={20} color="var(--ink)" />} color="var(--butter)" />
+              <StatCard title={tr('Average Score','متوسط التقييم')} value={`${avgScore}%`} icon={<Award size={20} color="var(--ink)" />} color="var(--mint)" />
               <StatCard title={tr('Attention Area','مجال يحتاج الانتباه')} value={language==='ar' && weakestArea==='None'?'لا يوجد':weakestArea} icon={<Doodle kind="star" size={20} color="var(--ink)" />} color="var(--rose)" />
             </div>
 

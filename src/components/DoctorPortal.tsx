@@ -488,7 +488,11 @@ export function DoctorPortal() {
                   
                   <div style={{ borderTop: '2px dashed var(--line)', paddingTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 800 }}>
                     <div>
-                      <span style={{ color: 'var(--ink-soft)' }}>Sessions:</span>{' '}
+                      <span style={{ color: 'var(--ink-soft)' }}>{tr('Days:','الأيام:')}</span>{' '}
+                      <span style={{ color: 'var(--ink)', fontWeight: 900 }}>{p.sessionCount}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--ink-soft)' }}>{tr('Sessions:','الجلسات:')}</span>{' '}
                       <span style={{ color: 'var(--ink)' }}>{p.sessionCount}</span>
                     </div>
                     <div>

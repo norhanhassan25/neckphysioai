@@ -557,9 +557,13 @@ export function AdminPortal() {
                               borderRadius: 6,
                               padding: '1px 6px',
                               display: 'inline-flex',
+                              gap: 4,
                               width: 'fit-content'
                             }}>
-                              {u.sessionCount ?? 0} {tr('Sessions', 'جلسات')} {u.avgScore ? `(${u.avgScore}%)` : ''}
+                              <span>{u.sessionCount ?? 0} {tr('Days', 'أيام')}</span>
+                              <span>•</span>
+                              <span>{u.sessionCount ?? 0} {tr('Sessions', 'جلسات')}</span>
+                              {u.avgScore ? <span>({u.avgScore}%)</span> : null}
                             </span>
                           </div>
                         ) : (
@@ -1122,6 +1126,14 @@ export function AdminPortal() {
                   <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Experience', 'المستوى')}</div>
                   <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4 }}>
                     {selectedUserModal.experience || tr('Beginner', 'مبتدئ')}
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--cream)', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--line)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', textTransform: 'uppercase' }}>{tr('Days Practiced', 'عدد الأيام')}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Calendar size={16} style={{ color: 'var(--sky-deep)' }} />
+                    <span>{selectedUserModal.sessionCount ?? 0} {tr('Days', 'أيام')}</span>
                   </div>
                 </div>
 
