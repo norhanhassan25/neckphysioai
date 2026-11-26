@@ -309,6 +309,23 @@ export const migrations: Migration[] = [
       );
     `,
   },
+
+  {
+    id: 16,
+    name: 'delete_yaqeen_pre_keep_last_assessment',
+    sql: `
+      DELETE FROM neck_assessments
+      WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
+        AND id NOT IN (
+          SELECT id FROM (
+            SELECT id FROM neck_assessments
+            WHERE user_id IN (SELECT user_id FROM users WHERE LOWER(email) = 'yaqeen@gmail.com')
+            ORDER BY id DESC
+            LIMIT 1
+          ) AS sub
+        );
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
