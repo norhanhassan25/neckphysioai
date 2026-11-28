@@ -359,6 +359,47 @@ export const migrations: Migration[] = [
       WHERE duration_seconds < 300;
     `,
   },
+
+  {
+    id: 18,
+    name: 'set_mazen_yasser_pre_22_and_post_12',
+    sql: `
+      -- Unlink any tracking sessions referencing Mazen's assessments
+      UPDATE neck_tracking_sessions
+      SET assessment_id = NULL
+      WHERE user_id IN (
+        SELECT user_id FROM users 
+        WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com')
+      );
+
+      -- Delete existing assessments for Mazen
+      DELETE FROM neck_assessments
+      WHERE user_id IN (
+        SELECT user_id FROM users 
+        WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com')
+      );
+
+      -- Insert Pre-assessment (22% -> sum 11/50)
+      INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
+      SELECT user_id,
+        '{"pain":3,"area":"center","duration":"weeks","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,1,1,2,2]}'::jsonb,
+        'eligible',
+        NULL,
+        now() - interval '9 days'
+      FROM users 
+      WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com');
+
+      -- Insert Last Post-assessment (12% -> sum 6/50)
+      INSERT INTO neck_assessments (user_id, answers, status, exercise_id, created_at)
+      SELECT user_id,
+        '{"pain":1,"area":"center","duration":"recent","painfulMovement":"none","warningSymptoms":[],"ndi":[1,1,1,1,1,1,0,0,0,0]}'::jsonb,
+        'eligible',
+        NULL,
+        now() - interval '1 hour'
+      FROM users 
+      WHERE LOWER(email) IN ('maazen-yas24@gamil.con', 'maazen-yas24@gmail.com');
+    `,
+  },
 ];
 
 // arbitrary constant, stops two server instances migrating at the same time
